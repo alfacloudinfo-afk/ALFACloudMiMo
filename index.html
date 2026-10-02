@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A2540">
+<title>ALFACloud V1.0 — Admin Console</title>
+<script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+<style>
+:root{
+--navy:#0A2540; --navy2:#14365E; --navy3:#1B4A84;
+--blue:#1663FF; --blue-dark:#0E4FD6; --blue-soft:#E8F0FF;
+--navy-soft:#E9EDF3; --bg:#EFF3F9; --surface:#FFFFFF;
+--line:#DDE6F2; --text:#0A2540; --muted:#5D7190;
+--radius:14px; --shadow:0 8px 24px rgba(10,37,64,.08);
+--header-h:62px; --sidebar-w:264px;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden}
+body{font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.app{display:flex;height:100dvh;overflow:hidden}
+/* SIDEBAR LIGHT */
+.sidebar{width:var(--sidebar-w);flex:0 0 auto;background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;height:100dvh;z-index:50}
+.brand{display:flex;align-items:center;gap:11px;padding:14px 16px;border-bottom:1px solid var(--line);flex:0 0 auto}
+.brand-mark{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;color:#fff;font-weight:900;background:linear-gradient(135deg,var(--navy),var(--blue));box-shadow:0 6px 16px rgba(22,99,255,.25)}
+.brand h1{margin:0;font-size:18px;letter-spacing:-.03em;color:var(--navy)} .brand h1 span{color:var(--blue)}
+.brand small{display:block;color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;margin-top:2px}
+.status-panel{margin:10px 12px 8px;padding:11px;border-radius:12px;background:var(--bg);border:1px solid var(--line);flex:0 0 auto}
+.device-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.device-status{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:var(--navy)}
+.online-dot{width:9px;height:9px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 5px rgba(22,99,255,.15);animation:pulse 2.2s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 8px rgba(22,99,255,0)}}
+.admin-badge{padding:4px 7px;border-radius:7px;background:var(--navy);color:#fff;font-size:9px;font-weight:800;letter-spacing:.1em}
+.quick-mini{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.quick-mini button{display:flex;align-items:center;justify-content:center;gap:5px;min-height:32px;border-radius:9px;border:1px solid var(--line);background:#fff;color:var(--navy);font-size:10px;font-weight:800}
+.quick-mini button:first-child{background:var(--blue);border-color:var(--blue);color:#fff}
+.quick-mini i{width:14px;height:14px}
+.nav-label{padding:4px 18px 6px;color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;flex:0 0 auto}
+.navigation{flex:1;overflow-y:auto;padding:0 10px 12px;min-height:0;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+.nav-item{position:relative;display:flex;width:100%;align-items:center;gap:11px;min-height:40px;margin:2px 0;padding:9px 11px;border:0;border-radius:10px;color:#3D4E6B;background:transparent;text-align:left;font-size:12.5px;font-weight:600;transition:.18s}
+.nav-item i{width:17px;height:17px;flex:0 0 auto;color:var(--muted)}
+.nav-item:hover{background:var(--blue-soft);color:var(--navy)} .nav-item:hover i{color:var(--blue)}
+.nav-item.active{background:linear-gradient(90deg,var(--navy),var(--navy2));color:#fff;box-shadow:0 6px 16px rgba(10,37,64,.18)} .nav-item.active i{color:#fff}
+.nav-item.logout{margin-top:8px;color:var(--blue-dark);border-top:1px solid var(--line);border-radius:0}
+/* MAIN + HEADER - changed for contrast */
+.main{flex:1;display:flex;flex-direction:column;height:100dvh;overflow:hidden;min-width:0}
+.topbar{flex:0 0 var(--header-h);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 18px;background:linear-gradient(135deg,#0A2540 0%,#13365E 55%,#164E9E 100%);color:#fff;box-shadow:0 4px 18px rgba(10,37,64,.25);z-index:30}
+.topbar-left,.topbar-actions,.profile{display:flex;align-items:center;gap:11px}
+.breadcrumbs{font-size:12px;color:#B9C9E2} .breadcrumbs strong{color:#fff}
+.icon-button{display:grid;width:38px;height:38px;place-items:center;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;transition:.2s}
+.icon-button:hover{background:rgba(255,255,255,.16);transform:translateY(-1px)} .icon-button i{width:17px;height:17px}
+.menu-toggle{display:none}
+.profile{padding-left:11px;border-left:1px solid rgba(255,255,255,.18)}
+.avatar{display:grid;width:36px;height:36px;place-items:center;border-radius:10px;background:#fff;color:var(--navy);font-size:11px;font-weight:900}
+.profile strong,.profile small{display:block} .profile strong{font-size:12px;color:#fff} .profile small{font-size:10px;color:#B9C9E2}
+/* CONTENT - no page scroll */
+.content{flex:1;overflow:hidden;padding:12px 18px 10px;min-height:0;display:flex;flex-direction:column}
+.page{flex:1;display:flex;flex-direction:column;gap:10px;min-height:0;overflow:hidden}
+.page-head-compact{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.eyebrow{color:var(--blue);font-size:9px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;margin-bottom:2px}
+.page-head-compact h2{margin:0;font-size:20px;letter-spacing:-.03em;line-height:1.1}
+.page-head-compact p{margin:3px 0 0;color:var(--muted);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:640px}
+.action-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:38px;padding:8px 13px;border-radius:10px;border:1px solid transparent;font-size:11px;font-weight:800;transition:.2s;white-space:nowrap}
+.btn i{width:15px;height:15px} .btn:hover{transform:translateY(-1px);box-shadow:0 6px 14px rgba(10,37,64,.14)}
+.btn-primary{background:linear-gradient(135deg,var(--blue),var(--blue-dark));color:#fff}
+.btn-dark{background:var(--navy);color:#fff}
+.btn-secondary{background:#fff;border-color:var(--line);color:var(--navy)}
+.btn-sm{min-height:32px;padding:6px 10px;font-size:10px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.card-pad{padding:14px} .card-header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line)} .card-header h3{margin:0;font-size:13px} .card-header p{margin:2px 0 0;color:var(--muted);font-size:10px} .card-body{padding:14px}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;font-size:9px;font-weight:800;white-space:nowrap}
+.badge::before{width:5px;height:5px;border-radius:50%;background:currentColor;content:""}
+.badge.blue{background:var(--blue-soft);color:var(--blue-dark)} .badge.navy{background:var(--navy);color:#fff} .badge.gray{background:var(--navy-soft);color:var(--muted)} .badge.line{background:#fff;border:1px solid var(--line);color:var(--navy)}
+label{display:block;margin-bottom:5px;color:#3D4E6B;font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+input,select,textarea{width:100%;min-height:38px;padding:8px 11px;border:1px solid #D2DCEA;border-radius:10px;background:#FBFCFE;color:var(--text);font-size:12px;outline:none;transition:.2s}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(22,99,255,.12)}
+textarea{min-height:64px;resize:none}
+.search-wrap{position:relative} .search-wrap i{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--muted)} .search-wrap input{padding-left:32px}
+/* HOME fixed filter */
+.home-filter-fixed{flex:0 0 auto;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;box-shadow:var(--shadow);position:sticky;top:0;z-index:15}
+.filter-2col{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.chip-row{display:flex;align-items:center;gap:6px;margin-top:8px}
+.chip{border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:999px;padding:5px 11px;font-size:10px;font-weight:800;transition:.2s}
+.chip.active{background:var(--navy);border-color:var(--navy);color:#fff}
+.chip-count{margin-left:auto;font-size:10px;font-weight:800;color:var(--blue-dark);background:var(--blue-soft);padding:4px 9px;border-radius:999px}
+/* DATA CARDS (no tables) */
+.data-grid{flex:1;min-height:0;overflow:hidden;display:grid;grid-template-columns:repeat(3,1fr);gap:9px;align-content:start}
+.c-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:.2s;min-height:78px}
+.c-card:hover{border-color:var(--blue);transform:translateY(-1px);box-shadow:0 8px 18px rgba(22,99,255,.12)}
+.mini-avatar{display:grid;width:36px;height:36px;flex:0 0 auto;place-items:center;border-radius:10px;background:var(--blue-soft);color:var(--blue-dark);font-size:11px;font-weight:900}
+.mini-avatar.navy{background:var(--navy);color:#fff}
+.c-main{flex:1;min-width:0} .c-main strong{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} .c-main small{color:var(--muted);font-size:10px} .c-route{font-size:9px;font-weight:800;color:var(--blue-dark);margin-top:2px}
+.c-side{text-align:right;flex:0 0 auto} .c-side strong{display:block;font-size:12px} .c-side .badge{margin-top:3px}
+.icon-mini{width:28px;height:28px;display:grid;place-items:center;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--muted);flex:0 0 auto} .icon-mini i{width:14px;height:14px}
+.pager{flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:6px;padding:4px 0 1px}
+.pg-btn{min-width:30px;height:30px;padding:0 8px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--navy);font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center}
+.pg-btn.active{background:var(--blue);border-color:var(--blue);color:#fff} .pg-btn:disabled{opacity:.4}
+.empty-note,.notice-box{padding:12px;border-radius:11px;background:#F3F7FC;color:#3D4E6B;font-size:11px;line-height:1.55;border:1px solid var(--line)}
+.notice-box.warn{background:#FFF8E9;border-color:#FFE0A5;color:#7A5200}
+.notice-box.navy{background:var(--navy);border-color:var(--navy);color:#D7E3F5}
+/* BOTTOM NAV - home only */
+.bottom-nav{flex:0 0 auto;display:none;align-items:stretch;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 28px rgba(10,37,64,.12);padding:6px;margin-top:8px;width:min(560px,100%);margin-left:auto;margin-right:auto}
+.bottom-nav.show{display:flex}
+.bottom-nav button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:0;background:transparent;color:var(--muted);padding:6px 2px;border-radius:10px;min-height:48px}
+.bottom-nav button i{width:19px;height:19px}
+.bottom-nav button span{font-size:8px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;line-height:1}
+.bottom-nav button.active,.bottom-nav button:hover{background:var(--blue-soft);color:var(--blue-dark)}
+/* DAILY compact */
+.daily-control{flex:0 0 auto;padding:10px 12px}
+.daily-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}
+.radio-group{display:flex;gap:8px;flex-wrap:wrap}
+.radio{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:#FBFCFE;font-size:11px;font-weight:800;color:var(--muted);cursor:pointer;transition:.2s}
+.radio.checked{background:var(--navy);border-color:var(--navy);color:#fff}
+.radio input{display:none} .radio-dot{width:12px;height:12px;border-radius:50%;border:2px solid currentColor;display:grid;place-items:center;opacity:.9}
+.radio.checked .radio-dot{background:#fff;border-color:#fff;box-shadow:inset 0 0 0 3px var(--navy)}
+.daily-controls-row{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end}
+.daily-tiles{flex:0 0 auto;display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.tile{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center;display:flex;flex-direction:column;justify-content:center;gap:3px;min-height:74px;box-shadow:var(--shadow)}
+.tile.hl{background:linear-gradient(135deg,var(--navy),var(--navy2));border-color:var(--navy);color:#fff} .tile.hl span{color:#B9C9E2} .tile.hl strong{color:#fff}
+.tile.bl{background:linear-gradient(135deg,var(--blue),var(--blue-dark));border-color:var(--blue);color:#fff} .tile.bl span{color:#D3E3FF} .tile.bl strong{color:#fff}
+.tile span{font-size:8px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.tile strong{font-size:12.5px;letter-spacing:-.02em}
+.tile small{font-size:9px;color:var(--muted)} .tile.hl small,.tile.bl small{color:rgba(255,255,255,.85)}
+.daily-foot{flex:1;min-height:0;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.daily-progress{flex:1;display:flex;align-items:center;gap:10px;font-size:11px;font-weight:700;min-width:0}
+.progress{flex:1;height:7px;overflow:hidden;border-radius:99px;background:#E8EEF5;min-width:60px}
+.progress span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--blue),var(--navy));transition:width .5s}
+/* Grids */
+.grid{display:grid;gap:10px} .stats-4{grid-template-columns:repeat(4,1fr)} .two-col{grid-template-columns:1.4fr .9fr} .equal-2{grid-template-columns:1fr 1fr} .three-col{grid-template-columns:repeat(3,1fr)}
+.stat-mini{background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px;display:flex;gap:10px;align-items:center;box-shadow:var(--shadow)}
+.stat-ic{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;flex:0 0 auto;background:var(--blue-soft);color:var(--blue-dark)} .stat-ic.navy{background:var(--navy);color:#fff} .stat-ic i{width:16px;height:16px}
+.stat-mini strong{display:block;font-size:15px;letter-spacing:-.03em} .stat-mini small{color:var(--muted);font-size:10px;font-weight:600}
+.summary-list{display:grid} .summary-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:11px} .summary-item:last-child{border:0} .summary-item span{color:var(--muted)} 
+.route-row{padding:8px 0;border-bottom:1px solid var(--line)} .route-row:last-child{border:0} .route-meta{display:flex;justify-content:space-between;font-size:11px;font-weight:700;margin-bottom:6px}
+.tabs{display:flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:12px;background:#fff;box-shadow:var(--shadow);flex:0 0 auto}
+.tab{flex:1;border:0;background:transparent;color:var(--muted);border-radius:8px;padding:8px;font-size:10px;font-weight:800;white-space:nowrap} .tab.active{background:var(--navy);color:#fff}
+.chart{display:flex;height:132px;align-items:flex-end;gap:9px;padding-top:10px} .bar-group{flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:5px;height:100%;text-align:center} .bar{min-height:8px;border-radius:6px 6px 2px 2px;background:linear-gradient(180deg,var(--blue),var(--navy));transition:height .5s} .bar-group small{color:var(--muted);font-size:8px;font-weight:700}
+.hero{position:relative;overflow:hidden;padding:14px 16px;color:#fff;background:linear-gradient(135deg,#0A2540 0%,#164E9E 100%);border-radius:var(--radius);flex:0 0 auto}
+.hero::after{position:absolute;right:-30px;bottom:-70px;width:180px;height:180px;border:1px solid rgba(255,255,255,.18);border-radius:50%;box-shadow:0 0 0 22px rgba(255,255,255,.05),0 0 0 48px rgba(255,255,255,.03);content:""}
+.hero h3{position:relative;z-index:1;margin:0 0 4px;font-size:16px} .hero p{position:relative;z-index:1;margin:0 0 10px;color:#C9D9F0;font-size:11px;max-width:560px} .hero .btn{position:relative;z-index:1;background:#fff;color:var(--navy);border:0}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px} .form-grid.three{grid-template-columns:1fr 1fr 1fr} .field.full{grid-column:1/-1}
+.input-row{display:flex;gap:8px} .input-row input{flex:1}
+.result-box{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:11px;border-radius:12px;background:var(--blue-soft);border:1px solid #C9DAFF} .result-box div{padding:4px 10px;border-right:1px solid #B9CCF0} .result-box div:last-child{border:0} .result-box span{display:block;font-size:8px;font-weight:800;color:var(--blue-dark);text-transform:uppercase;margin-bottom:2px} .result-box strong{display:block;font-size:14px;color:var(--navy)}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)} .toggle-row:last-child{border:0} .toggle-row strong{display:block;font-size:12px} .toggle-row small{color:var(--muted);font-size:10px}
+.switch{position:relative;width:42px;height:23px;flex:0 0 auto} .switch input{opacity:0;width:0;height:0} .slider{position:absolute;inset:0;border-radius:99px;background:#CBD6E6;transition:.25s} .slider::before{position:absolute;left:3px;bottom:3px;width:17px;height:17px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.2);content:"";transition:.25s} .switch input:checked+.slider{background:var(--blue)} .switch input:checked+.slider::before{transform:translateX(19px)}
+.log-list{display:grid;gap:0} .log-entry{padding:7px 0;border-bottom:1px solid var(--line);font-family:ui-monospace,Menlo,monospace;font-size:10px;color:#3D4E6B} .log-entry.error{color:var(--navy);font-weight:700}
+.about-avatar{display:grid;width:64px;height:64px;margin:0 auto 10px;place-items:center;border-radius:18px;background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;font-size:20px;font-weight:900;box-shadow:0 10px 24px rgba(22,99,255,.25)}
+.stepper{display:flex;gap:6px;margin-bottom:10px} .step{flex:1;height:4px;border-radius:99px;background:var(--line)} .step.active{background:var(--blue)} .step.done{background:var(--navy)}
+.step-labels{display:flex;gap:6px;margin:-6px 0 10px} .step-labels span{flex:1;font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)} .step-labels span.on{color:var(--blue-dark)}
+.pay-tabs{display:none;gap:6px;margin-bottom:8px} .pay-tabs button{flex:1;border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px;font-size:10px;font-weight:800;color:var(--muted)} .pay-tabs button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;z-index:100;background:rgba(10,37,64,.55);backdrop-filter:blur(4px);display:none;place-items:center;padding:14px}
+.modal-overlay.open{display:grid}
+.modal-card{width:min(580px,100%);max-height:88dvh;background:#fff;border-radius:18px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.28);animation:modalIn .25s ease}
+@keyframes modalIn{from{opacity:0;transform:translateY(14px) scale(.98)}}
+.modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 15px;border-bottom:1px solid var(--line);background:var(--bg);flex:0 0 auto}
+.modal-head h3{margin:0;font-size:14px} .modal-head p{margin:2px 0 0;font-size:10px;color:var(--muted)}
+.modal-x{width:32px;height:32px;display:grid;place-items:center;border-radius:9px;border:1px solid var(--line);background:#fff;color:var(--navy)} .modal-x i{width:15px;height:15px}
+.modal-body{padding:13px 15px;overflow-y:auto;flex:1;min-height:0}
+.modal-foot{padding:11px 15px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;background:#fff;flex:0 0 auto;flex-wrap:wrap}
+.pay-card{border:1px solid var(--line);border-radius:12px;padding:10px 11px;margin-bottom:8px;background:#FBFDFF}
+.pay-top{display:flex;align-items:center;gap:9px;margin-bottom:8px} .pay-top div{flex:1;min-width:0} .pay-top strong{display:block;font-size:12px} .pay-top small{color:var(--muted);font-size:10px} .pay-amt{color:var(--blue-dark);font-size:13px}
+.pay-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;background:#fff;border:1px solid var(--line);border-radius:9px;padding:8px}
+.pay-grid div span{display:block;font-size:7.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:1px} .pay-grid div strong{font-size:11px}
+.detail-meta{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}
+.print-progress-wrap{background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:10px 12px;margin-bottom:10px}
+.print-progress-head{display:flex;justify-content:space-between;font-size:11px;font-weight:800;margin-bottom:7px}
+.receipt-58{width:230px;max-width:100%;margin:0 auto 10px;background:#fff;border:1px dashed var(--navy);border-radius:8px;padding:12px;font-family:ui-monospace,Menlo,monospace;font-size:11px;line-height:1.6;box-shadow:0 6px 16px rgba(10,37,64,.1)}
+.print-queue{display:grid;gap:5px;max-height:150px;overflow-y:auto}
+.q-item{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;border-radius:9px;background:#F7FAFF;border:1px solid var(--line);font-size:11px;font-weight:700}
+.q-item.printing{background:var(--blue-soft);border-color:var(--blue)} .q-item.done{background:#EEF2F7} .q-status{font-size:9px;font-weight:800;color:var(--muted)} .q-item.printing .q-status{color:var(--blue-dark)} .q-item.done .q-status{color:var(--navy)}
+.customer-cell{display:flex;align-items:center;gap:10px}
+/* TOAST */
+.toast-container{position:fixed;right:16px;bottom:16px;z-index:120;display:flex;flex-direction:column;gap:8px;width:min(350px,calc(100vw - 32px))}
+.toast{display:flex;gap:10px;align-items:flex-start;padding:12px;border-radius:12px;background:#fff;border:1px solid var(--line);border-left:4px solid var(--blue);box-shadow:0 14px 34px rgba(10,37,64,.18);animation:toastIn .28s ease}
+.toast.navy{border-left-color:var(--navy)} .toast i{width:17px;height:17px;flex:0 0 auto;color:var(--blue)} .toast.navy i{color:var(--navy)}
+.toast strong{display:block;font-size:11px;margin-bottom:2px} .toast span{font-size:10px;color:var(--muted);line-height:1.45}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}}
+.overlay{position:fixed;inset:0;z-index:45;display:none;background:rgba(10,37,64,.55)}
+.login-screen{position:fixed;inset:0;z-index:200;display:none;place-items:center;padding:18px;background:radial-gradient(circle at 15% 10%,rgba(22,99,255,.22),transparent 28%),radial-gradient(circle at 90% 90%,rgba(20,78,158,.25),transparent 28%),#0A2540}
+.login-card{width:min(410px,100%);padding:28px;border-radius:20px;background:#fff;box-shadow:0 30px 80px rgba(0,0,0,.35)}
+.login-card h2{margin:14px 0 0;font-size:24px;letter-spacing:-.04em} .login-card p{margin:6px 0 18px;color:var(--muted);font-size:12px} .login-card .field{margin-bottom:12px} .login-card .btn{width:100%} .login-hint{margin-top:14px;text-align:center;color:var(--muted);font-size:10px}
+.fit{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:10px}
+.spin{animation:spin 1s linear infinite} @keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:1100px){.data-grid{grid-template-columns:repeat(2,1fr)} .daily-tiles{grid-template-columns:repeat(3,1fr)} .two-col,.equal-2{grid-template-columns:1fr} .stats-4{grid-template-columns:repeat(2,1fr)} .daily-foot{flex-direction:column;align-items:stretch} }
+@media(max-width:820px){
+.sidebar{position:fixed;inset:0 auto 0 0;transform:translateX(-100%);transition:.28s} body.sidebar-open .sidebar{transform:none} body.sidebar-open .overlay{display:block}
+.menu-toggle{display:grid} .topbar{padding:0 12px} .content{padding:10px 11px 8px} .page-head-compact p{display:none} .page-head-compact h2{font-size:17px}
+.profile-info,.breadcrumbs span{display:none}
+.form-grid.three,.three-col{grid-template-columns:1fr 1fr}
+.pay-tabs{display:flex}
+}
+@media(max-width:560px){
+:root{--header-h:58px} .sidebar{width:min(268px,86vw)}
+.data-grid{grid-template-columns:1fr;gap:7px} .c-card{min-height:68px;padding:8px}
+.filter-2col{grid-template-columns:1fr 1fr;gap:7px} .chip{padding:4px 8px;font-size:9px}
+.stats-4{grid-template-columns:1fr 1fr;gap:7px} .stat-mini{padding:8px} .stat-mini strong{font-size:13px}
+.daily-tiles{gap:6px} .tile{min-height:66px;padding:7px 4px} .tile strong{font-size:11px} .tile span{font-size:7px}
+.daily-controls-row{grid-template-columns:1fr 1fr} .daily-controls-row .btn-field{grid-column:1/-1} .daily-controls-row .btn-field .btn{width:100%}
+.form-grid,.form-grid.three{grid-template-columns:1fr 1fr;gap:7px} .form-grid.single-m{grid-template-columns:1fr}
+.pay-grid{grid-template-columns:1fr 1fr}
+.bottom-nav{width:100%;margin-bottom:0} .toast-container{left:11px;right:11px;bottom:78px;width:auto}
+.card-pad,.card-body{padding:11px} .chart{height:112px}
+}
+@media(max-width:360px){.form-grid,.form-grid.three{grid-template-columns:1fr} .daily-tiles{grid-template-columns:repeat(3,1fr)}}
+@media print{.sidebar,.topbar,.page-head-compact,.no-print,.toast-container,.bottom-nav,.modal-overlay{display:none!important} .main{margin:0} body{background:#fff} .content{overflow:visible} .page{overflow:visible}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar" aria-label="Admin navigation">
+<div class="brand"><div class="brand-mark">A</div><div><h1>ALFA<span>Cloud</span></h1><small>Version 1.0 • Light</small></div></div>
+<div class="status-panel">
+<div class="device-row"><div class="device-status"><span class="online-dot"></span><span>Device Online</span></div><span class="admin-badge">ADMIN</span></div>
+<div class="quick-mini"><button data-nav="add-payment"><i data-lucide="banknote"></i>PAYMENT</button><button data-nav="infomations"><i data-lucide="info"></i>INFO</button></div>
+</div>
+<div class="nav-label">Main menu</div>
+<nav class="navigation" id="navigation">
+<button class="nav-item active" data-nav="home"><i data-lucide="house"></i><span>Home</span></button>
+<button class="nav-item" data-nav="daily"><i data-lucide="calendar-check"></i><span>Daily Collection</span></button>
+<button class="nav-item" data-nav="infomations"><i data-lucide="layout-dashboard"></i><span>Infomations</span></button>
+<button class="nav-item" data-nav="analyzer"><i data-lucide="chart-no-axes-combined"></i><span>Analyzer</span></button>
+<button class="nav-item" data-nav="add-payment"><i data-lucide="circle-dollar-sign"></i><span>Add New Payment</span></button>
+<button class="nav-item" data-nav="print-receipt"><i data-lucide="printer"></i><span>Print Receipt</span></button>
+<button class="nav-item" data-nav="financial"><i data-lucide="landmark"></i><span>Financial</span></button>
+<button class="nav-item" data-nav="add-loan"><i data-lucide="badge-plus"></i><span>Add New Loan</span></button>
+<button class="nav-item" data-nav="add-customer"><i data-lucide="user-plus"></i><span>Add New Customer</span></button>
+<button class="nav-item" data-nav="loan-manager"><i data-lucide="briefcase-business"></i><span>Loan Manager</span></button>
+<button class="nav-item" data-nav="payment-manager"><i data-lucide="wallet-cards"></i><span>Payment Manager</span></button>
+<button class="nav-item" data-nav="customer-manager"><i data-lucide="users"></i><span>Customer Manager</span></button>
+<button class="nav-item" data-nav="calculator"><i data-lucide="calculator"></i><span>Loan Calculator</span></button>
+<button class="nav-item" data-nav="route-manager"><i data-lucide="route"></i><span>Route Manager</span></button>
+<button class="nav-item" data-nav="general-settings"><i data-lucide="settings"></i><span>General Settings</span></button>
+<button class="nav-item" data-nav="printer-settings"><i data-lucide="printer-check"></i><span>Printer Settings</span></button>
+<button class="nav-item" data-nav="about"><i data-lucide="code-xml"></i><span>About Developer</span></button>
+<button class="nav-item logout" data-nav="logout"><i data-lucide="log-out"></i><span>Log Out</span></button>
+</nav>
+</aside>
+<div class="overlay" id="overlay"></div>
+<main class="main">
+<header class="topbar">
+<div class="topbar-left">
+<button class="icon-button menu-toggle" id="menuToggle" aria-label="Open menu"><i data-lucide="menu"></i></button>
+<div class="breadcrumbs"><span>ALFACloud / Admin / </span><strong id="crumb">Home</strong></div>
+</div>
+<div class="topbar-actions">
+<button class="icon-button" data-action="refresh" aria-label="Refresh"><i data-lucide="refresh-cw"></i></button>
+<button class="icon-button" data-action="notifications" aria-label="Notifications"><i data-lucide="bell"></i></button>
+<div class="profile"><div class="avatar">AK</div><div class="profile-info"><strong>Admin User</strong><small>Full access</small></div></div>
+</div>
+</header>
+<div class="content" id="content"></div>
+<nav class="bottom-nav" id="bottomNav" aria-label="Home quick actions">
+<button data-nav="home" class="active"><i data-lucide="house"></i><span>Home</span></button>
+<button data-nav="add-payment"><i data-lucide="banknote"></i><span>Pay</span></button>
+<button data-nav="daily"><i data-lucide="calendar-check"></i><span>Daily</span></button>
+<button data-nav="print-receipt"><i data-lucide="printer"></i><span>Print</span></button>
+<button data-nav="infomations"><i data-lucide="info"></i><span>Info</span></button>
+</nav>
+</main>
+</div>
+<div class="modal-overlay" id="modalOverlay">
+<div class="modal-card">
+<div class="modal-head"><div><h3 id="modalTitle">Details</h3><p id="modalSub"></p></div><button class="modal-x" data-action="close-modal"><i data-lucide="x"></i></button></div>
+<div class="modal-body" id="modalBody"></div>
+<div class="modal-foot" id="modalFoot"></div>
+</div>
+</div>
+<div class="toast-container" id="toasts"></div>
+<section class="login-screen" id="loginScreen">
+<form class="login-card" id="loginForm">
+<div class="brand-mark">A</div>
+<h2>Welcome back</h2>
+<p>Sign in to continue to the ALFACloud administration console.</p>
+<div class="field"><label>Username</label><input required value="admin" autocomplete="username"></div>
+<div class="field"><label>Password</label><input required type="password" value="admin123" autocomplete="current-password"></div>
+<button class="btn btn-primary" type="submit"><i data-lucide="log-in"></i>SIGN IN AS ADMIN</button>
+<div class="login-hint">Demo credentials are pre-filled for this simulation.</div>
+</form>
+</section>
+<script>
+const getTodayStr=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");};
+const TODAY=getTodayStr();
+const state={
+page:"home", dailyMode:"today", dailyRoute:"All Routes", dailyDate:TODAY,
+homeRoute:"All Routes", homeStatus:"All", homeSearch:"", homePage:1,
+custPage:1, custSearch:"", loanPage:1, loanSearch:"", payPage:1, paySearch:"", finPage:1,
+analyzerTab:"PAYMENT", settingsTab:"prefs", addCustStep:1, addLoanStep:1, payTab:"entry",
+printer:{mac:"00:11:22:33:AA:BC", connected:false},
+logs:[{type:"info",text:"Application initialized successfully.",time:"09:00:12"},{type:"info",text:"Local data synchronization completed.",time:"09:00:18"}],
+customers:[
+{id:"C-1001",name:"Nimal Perera",phone:"077 456 2210",route:"Colombo 01",balance:42800,status:"Active"},
+{id:"C-1002",name:"Saman Kumara",phone:"071 855 4912",route:"Kaduwela",balance:19500,status:"Arrears"},
+{id:"C-1003",name:"Kumari Silva",phone:"076 228 9031",route:"Malabe",balance:31100,status:"Active"},
+{id:"C-1004",name:"Ajith Fernando",phone:"075 320 1148",route:"Colombo 01",balance:0,status:"Completed"},
+{id:"C-1005",name:"Tharushi Jayasekara",phone:"078 667 1092",route:"Kaduwela",balance:57200,status:"Active"},
+{id:"C-1006",name:"Chamara Dias",phone:"077 112 8890",route:"Malabe",balance:38900,status:"Active"},
+{id:"C-1007",name:"Nadeesha Fernando",phone:"071 990 2231",route:"Colombo 01",balance:27400,status:"Active"},
+{id:"C-1008",name:"Kasun Bandara",phone:"076 445 6677",route:"Kaduwela",balance:51200,status:"Arrears"},
+{id:"C-1009",name:"Ishara Mendis",phone:"078 223 4455",route:"Malabe",balance:18300,status:"Active"},
+{id:"C-1010",name:"Dinesh Priyankara",phone:"075 667 8899",route:"Colombo 01",balance:44600,status:"Active"},
+{id:"C-1011",name:"Sanduni Lakmali",phone:"077 334 5566",route:"Kaduwela",balance:0,status:"Completed"},
+{id:"C-1012",name:"Lahiru Madushanka",phone:"071 778 9900",route:"Malabe",balance:22400,status:"Arrears"}
+],
+loans:[
+{id:"L-24091",customer:"Nimal Perera",cid:"C-1001",amount:75000,installment:2500,balance:42800,route:"Colombo 01"},
+{id:"L-24092",customer:"Saman Kumara",cid:"C-1002",amount:50000,installment:1800,balance:19500,route:"Kaduwela"},
+{id:"L-24093",customer:"Kumari Silva",cid:"C-1003",amount:60000,installment:2100,balance:31100,route:"Malabe"},
+{id:"L-24094",customer:"Tharushi Jayasekara",cid:"C-1005",amount:90000,installment:3000,balance:57200,route:"Kaduwela"},
+{id:"L-24096",customer:"Chamara Dias",cid:"C-1006",amount:65000,installment:2200,balance:38900,route:"Malabe"},
+{id:"L-24097",customer:"Nadeesha Fernando",cid:"C-1007",amount:55000,installment:1900,balance:27400,route:"Colombo 01"},
+{id:"L-24098",customer:"Kasun Bandara",cid:"C-1008",amount:80000,installment:2700,balance:51200,route:"Kaduwela"},
+{id:"L-24099",customer:"Ishara Mendis",cid:"C-1009",amount:45000,installment:1600,balance:18300,route:"Malabe"},
+{id:"L-24100",customer:"Dinesh Priyankara",cid:"C-1010",amount:70000,installment:2400,balance:44600,route:"Colombo 01"},
+{id:"L-24101",customer:"Lahiru Madushanka",cid:"C-1012",amount:48000,installment:1700,balance:22400,route:"Malabe"}
+],
+routes:[
+{id:"RT-01",name:"Colombo 01",collector:"D. Perera",customers:42,expected:8400,progress:82},
+{id:"RT-02",name:"Kaduwela",collector:"M. Silva",customers:57,expected:9200,progress:68},
+{id:"RT-03",name:"Malabe",collector:"A. Fernando",customers:38,expected:7800,progress:74}
+],
+payments:[], finance:[
+{date:"Today",ref:"DC-0514",desc:"Daily customer collection",cat:"Collection",income:6400,expense:0},
+{date:"Today",ref:"EX-0098",desc:"Collector fuel allowance",cat:"Travel",income:0,expense:3500},
+{date:"Yesterday",ref:"EX-0097",desc:"Receipt paper rolls 58mm",cat:"Office",income:0,expense:1200},
+{date:"Yesterday",ref:"DC-0513",desc:"Daily customer collection",cat:"Collection",income:18200,expense:0},
+{date:"12 May",ref:"EX-0096",desc:"Office utilities",cat:"Utilities",income:0,expense:2400},
+{date:"12 May",ref:"DC-0512",desc:"Daily customer collection",cat:"Collection",income:17800,expense:0}
+]
+};
+(function buildPayments(){
+const tpl=[
+{cid:"C-1001",lid:"L-24091",lam:75000,name:"Nimal Perera",amt:2500,time:"08:45 AM",route:"Colombo 01"},
+{cid:"C-1007",lid:"L-24097",lam:55000,name:"Nadeesha Fernando",amt:1900,time:"09:20 AM",route:"Colombo 01"},
+{cid:"C-1010",lid:"L-24100",lam:70000,name:"Dinesh Priyankara",amt:2400,time:"10:12 AM",route:"Colombo 01"},
+{cid:"C-1002",lid:"L-24092",lam:50000,name:"Saman Kumara",amt:1800,time:"09:12 AM",route:"Kaduwela"},
+{cid:"C-1005",lid:"L-24094",lam:90000,name:"Tharushi Jayasekara",amt:3000,time:"10:35 AM",route:"Kaduwela"},
+{cid:"C-1008",lid:"L-24098",lam:80000,name:"Kasun Bandara",amt:2700,time:"11:42 AM",route:"Kaduwela"},
+{cid:"C-1003",lid:"L-24093",lam:60000,name:"Kumari Silva",amt:2100,time:"09:48 AM",route:"Malabe"},
+{cid:"C-1006",lid:"L-24096",lam:65000,name:"Chamara Dias",amt:2200,time:"11:05 AM",route:"Malabe"},
+{cid:"C-1009",lid:"L-24099",lam:45000,name:"Ishara Mendis",amt:1600,time:"01:35 PM",route:"Malabe"}
+];
+const counts=[9,7,8,6,7,5,6];
+for(let d=0; d<7; d++){
+const dt=new Date(); dt.setDate(dt.getDate()-d);
+const ds=dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(dt.getDate()).padStart(2,"0");
+const n=counts[d];
+for(let i=0;i<n;i++){const t=tpl[i%tpl.length];
+state.payments.push({receipt:"R-"+(90881-d*11+i),customerId:t.cid,loan:t.lid,loanAmount:t.lam,customer:t.name,amount:t.amt,time:t.time,date:ds,route:t.route,method:(i%3===0?"Bank":"Cash")});
+}}
+})();
+const meta={home:["Home","Customer overview and route-based collection operations."],daily:["Daily Collection","Today or custom date collection with detailed modal and Bluetooth print."],infomations:["Infomations","Portfolio health across customers, loans and routes."],analyzer:["Analyzer","Payment, arrears, system and route performance."],"add-payment":["Add New Payment","Lookup customer, review loan and record payment."],"print-receipt":["Print Receipt","Find a payment and print its 58mm receipt."],financial:["Financial","Income, expenditures and cash-flow analysis."],"add-loan":["Add New Loan","Create loan terms with instant calculation."],"add-customer":["Add New Customer","Register customer in 3 quick steps."],"loan-manager":["Loan Manager","All loans as cards — tap for modal details."],"payment-manager":["Payment Manager","Loans ready for payment via popup flow."],"customer-manager":["Customer Manager","All customers as cards with modal edit."],calculator:["Loan Calculator","Installment, end value and profit estimator."],"route-manager":["Route Manager","Routes and collector assignments."],"general-settings":["General Settings","Preferences, company and server in tabs."],"printer-settings":["Printer Settings","58mm Bluetooth printer and event log."],about:["About Developer","Version, contact and copyright."]};
+const money=v=>"Rs "+Number(v).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+const money0=v=>"Rs "+Number(v).toLocaleString("en-US");
+const initials=n=>n.split(" ").map(x=>x[0]).join("").slice(0,2).toUpperCase();
+const badgeFor=s=>s==="Active"?"blue":s==="Arrears"?"navy":"gray";
+const esc=s=>String(s).replace(/</g,"&lt;");
+function timeToMin(t){const m=t.match(/(\d+):(\d+)\s(AM|PM)/);if(!m)return 0;let h=+m[1]%12;if(m[3]==="PM")h+=12;return h*60+(+m[2]);}
+function fmtDisplay(ds){try{return new Date(ds+"T00:00:00").toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"});}catch(e){return ds;}}
+function pageSize(){const w=window.innerWidth;if(w<560)return 3;if(w<1100)return 4;return 6;}
+function pageHead(id,actions=""){const[t,d]=meta[id];return `<div class="page-head-compact"><div><div class="eyebrow">Administration console</div><h2>${t}</h2><p>${d}</p></div>${actions?`<div class="action-row no-print">${actions}</div>`:""}</div>`;}
+function statMini(icon,value,label,navy=false){return `<div class="stat-mini"><div class="stat-ic ${navy?"navy":""}"><i data-lucide="${icon}"></i></div><div><strong>${value}</strong><small>${label}</small></div></div>`;}
+function pagerHTML(cur,total,key){if(total<=1)return `<span class="badge line">1 / 1</span>`;let nums="";for(let i=1;i<=total;i++){if(total>5 && Math.abs(i-cur)>1 && i!==1 && i!==total){if(nums.slice(-3)!=="...")nums+=`<span style="font-size:10px;color:var(--muted)">…</span>`;continue;}nums+=`<button class="pg-btn ${i===cur?"active":""}" data-action="page" data-key="${key}" data-p="${i}">${i}</button>`;}return `<button class="pg-btn" data-action="page" data-key="${key}" data-p="${cur-1}" ${cur===1?"disabled":""}><i data-lucide="chevron-left" style="width:14px;height:14px"></i></button>${nums}<button class="pg-btn" data-action="page" data-key="${key}" data-p="${cur+1}" ${cur===total?"disabled":""}><i data-lucide="chevron-right" style="width:14px;height:14px"></i></button>`;}
+/* MODAL + TOAST + LOG */
+function openModal(title,sub,body,foot){document.getElementById("modalTitle").textContent=title;document.getElementById("modalSub").textContent=sub||"";document.getElementById("modalBody").innerHTML=body;document.getElementById("modalFoot").innerHTML=foot||"";document.getElementById("modalOverlay").classList.add("open");lucide.createIcons();}
+function closeModal(){document.getElementById("modalOverlay").classList.remove("open");}
+function toast(title,msg,style="blue"){const box=document.createElement("div");box.className="toast "+style;box.innerHTML=`<i data-lucide="${style==="navy"?"circle-alert":"circle-check"}"></i><div><strong>${esc(title)}</strong><span>${esc(msg)}</span></div>`;document.getElementById("toasts").appendChild(box);lucide.createIcons();setTimeout(()=>{box.style.opacity="0";box.style.transform="translateY(8px)";setTimeout(()=>box.remove(),250);},3400);}
+function addLog(type,text){state.logs.push({type,text,time:new Date().toLocaleTimeString()});const l=document.getElementById("logList");if(l){l.innerHTML=logHTML();}}
+function logHTML(){return state.logs.slice().reverse().slice(0,5).map(l=>`<div class="log-entry ${l.type}">[${l.time}] ${esc(l.text)}</div>`).join("")||`<div class="empty-note">No logged events.</div>`;}
+/* DAILY LOGIC */
+function getDailyData(){const mode=state.dailyMode,route=state.dailyRoute;const date=mode==="today"?TODAY:state.dailyDate;
+const list=state.payments.filter(p=>p.date===date&&(route==="All Routes"||p.route===route)).sort((a,b)=>timeToMin(a.time)-timeToMin(b.time));
+const count=list.length,total=list.reduce((s,p)=>s+p.amount,0);
+let expected=25400;if(route!=="All Routes"){const r=state.routes.find(r=>r.name===route);expected=r?r.expected:8400;}
+const first=count?list[0].time:"--:--";const last=count?list[list.length-1].time:"--:--";
+return{date,display:fmtDisplay(date),count,expected,first,last,total,list,route};}
+function dailyTilesHTML(d){const pct=d.expected?Math.min(100,Math.round(d.total/d.expected*100)):0;
+return `<div class="tile"><span>Collection Date</span><strong>${d.display}</strong><small>${d.route}</small></div>
+<div class="tile"><span>Records</span><strong>${d.count}</strong><small>payments</small></div>
+<div class="tile"><span>Expected (Rs)</span><strong>${money0(d.expected)}</strong><small>target</small></div>
+<div class="tile"><span>First Payment</span><strong>${d.first}</strong><small>today</small></div>
+<div class="tile"><span>Last Payment</span><strong>${d.last}</strong><small>today</small></div>
+<div class="tile ${d.total>0?"bl":""}"><span>Total (Rs)</span><strong>${money0(d.total)}</strong><small>${pct}% done</small></div>`;}
+function updateDailyTiles(){const d=getDailyData();const t=document.getElementById("dailyTiles");if(t)t.innerHTML=dailyTilesHTML(d);
+const pct=d.expected?Math.min(100,Math.round(d.total/d.expected*100)):0;const b=document.getElementById("dailyProgBar"),x=document.getElementById("dailyProgTxt");
+if(b)b.style.width=pct+"%";if(x)x.textContent=pct+"% · "+money0(d.total)+" / "+money0(d.expected);
+const badge=document.getElementById("dailyModeBadge");if(badge)badge.textContent=state.dailyMode==="today"?"LIVE · TODAY":"CUSTOM · "+d.display;}
+function payCardHTML(p,i){return `<div class="pay-card"><div class="pay-top"><div class="mini-avatar">${initials(p.customer)}</div><div><strong>${i+1}. ${esc(p.customer)}</strong><small>${p.receipt} · ${p.method} · ${p.route}</small></div><strong class="pay-amt">${money0(p.amount)}</strong></div>
+<div class="pay-grid"><div><span>Customer ID</span><strong>${p.customerId}</strong></div><div><span>Loan ID</span><strong>${p.loan}</strong></div><div><span>Loan Amount</span><strong>${money0(p.loanAmount)}</strong></div><div><span>Name</span><strong>${esc(p.customer)}</strong></div><div><span>Amount Paid</span><strong>${money0(p.amount)}</strong></div><div><span>Payment Time</span><strong>${p.time}</strong></div></div></div>`;}
+function openDailyDetail(){const d=getDailyData();
+if(!d.count){openModal("Detailed View — "+d.display,d.route+" · No payments",`<div class="empty-note">No payments recorded for <strong>${d.display}</strong> on route <strong>${esc(d.route)}</strong>. Try another route or date.</div>`,`<button class="btn btn-secondary" data-action="close-modal">CLOSE</button>`);return;}
+openModal("Detailed View — "+d.display,`${d.route} · ${d.count} payers · Total ${money0(d.total)} · ${d.first} → ${d.last}`,
+`<div class="detail-meta"><span class="badge navy">${d.display}</span><span class="badge blue">${d.count} records</span><span class="badge blue">Expected ${money0(d.expected)}</span><span class="badge line">Printer: ${state.printer.connected?"Connected":"Disconnected"}</span></div><div>${d.list.map((p,i)=>payCardHTML(p,i)).join("")}</div>`,
+`<button class="btn btn-secondary" data-action="close-modal">CLOSE</button><button class="btn btn-dark" data-action="daily-print"><i data-lucide="printer"></i>PRINT ${d.count} × 58MM</button>`);}
+function startBatchPrint(list){
+if(!list.length){toast("Nothing to print","No payments to send to printer.","navy");return;}
+if(!state.printer.connected){addLog("error",`Print failed — Bluetooth ${state.printer.mac} unavailable. ${list.length} receipts queued.`);
+openModal("Printer Unavailable","Bluetooth 58mm thermal printer",`<div class="notice-box warn"><strong>Cannot print ${list.length} receipt(s).</strong><br>Printer <strong>${esc(state.printer.mac)}</strong> is disconnected. Connect it in Printer Settings. Payments and data remain unaffected.</div><div style="margin-top:10px">${logHTML()}</div>`,`<button class="btn btn-secondary" data-action="close-modal">CLOSE</button><button class="btn btn-dark" data-nav="printer-settings">OPEN PRINTER SETTINGS</button>`);toast("Printer unavailable","Connect the 58mm printer in Printer Settings.","navy");return;}
+let idx=0;
+openModal("Printing Daily Batch",`${list.length} receipts · 58mm · ${state.printer.mac}`,
+`<div class="print-progress-wrap"><div class="print-progress-head"><span id="ppCount">Preparing…</span><strong id="ppPct">0%</strong></div><div class="progress"><span id="ppBar" style="width:0%"></span></div></div>
+<div class="receipt-58" id="batchReceipt"><div style="text-align:center">Waiting…</div></div>
+<div class="print-queue">${list.map((p,i)=>`<div class="q-item" id="q-${i}"><span>${i+1}. ${p.customerId} · ${money0(p.amount)}</span><span class="q-status">QUEUED</span></div>`).join("")}</div>`,
+`<button class="btn btn-secondary" data-action="close-modal">CANCEL</button>`);
+function step(){
+if(!document.getElementById("ppBar"))return;
+if(idx>=list.length){document.getElementById("ppCount").textContent=`Completed ${list.length}/${list.length}`;document.getElementById("ppPct").textContent="100%";document.getElementById("ppBar").style.width="100%";
+document.getElementById("modalFoot").innerHTML=`<button class="btn btn-secondary" data-action="close-modal">CLOSE</button><button class="btn btn-primary" data-action="close-modal"><i data-lucide="check"></i>DONE</button>`;lucide.createIcons();
+toast("Batch print complete",`${list.length} receipts sent via Bluetooth.`);addLog("info",`Batch print completed: ${list.length} receipts via ${state.printer.mac}.`);return;}
+const p=list[idx];
+document.getElementById("batchReceipt").innerHTML=`<div style="text-align:center;font-weight:800;font-size:13px">ALFACloud Finance</div><div style="text-align:center;font-size:10px;margin:2px 0 6px">*** 58mm RECEIPT ***</div><div style="border-top:1px dashed #0A2540;margin:6px 0"></div><div>CUST&nbsp;&nbsp;: ${p.customerId}</div><div>LOAN&nbsp;&nbsp;: ${p.loan}</div><div>NAME&nbsp;&nbsp;: ${esc(p.customer).slice(0,18)}</div><div>PAID&nbsp;&nbsp;: ${money0(p.amount)}.00</div><div>TIME&nbsp;&nbsp;: ${p.time}</div><div>DATE&nbsp;&nbsp;: ${p.date}</div><div style="border-top:1px dashed #0A2540;margin:6px 0"></div><div style="text-align:center">Thank you!</div><div style="text-align:center;font-size:9px">${esc(state.printer.mac)}</div>`;
+document.getElementById("ppCount").textContent=`Printing ${idx+1}/${list.length} · ${p.customerId}`;const pct=Math.round(idx/list.length*100);document.getElementById("ppPct").textContent=pct+"%";document.getElementById("ppBar").style.width=pct+"%";
+const q=document.getElementById("q-"+idx);if(q){q.classList.add("printing");q.querySelector(".q-status").textContent="PRINTING";}
+addLog("info",`BT → ${state.printer.mac} | ${p.customerId} | ${money0(p.amount)} (${idx+1}/${list.length})`);
+setTimeout(()=>{if(q){q.classList.remove("printing");q.classList.add("done");q.querySelector(".q-status").textContent="SENT ✓";}idx++;setTimeout(step,320);},720);}
+step();}
+/* CARD BUILDERS */
+function customerCard(c){return `<div class="c-card" data-action="view-customer" data-id="${c.id}"><div class="mini-avatar ${c.status==="Arrears"?"navy":""}">${initials(c.name)}</div><div class="c-main"><strong>${esc(c.name)}</strong><small>${c.id} · ${esc(c.phone)}</small><div class="c-route">${esc(c.route)}</div></div><div class="c-side"><strong>${money0(c.balance)}</strong><span class="badge ${badgeFor(c.status)}">${c.status}</span></div><span class="icon-mini"><i data-lucide="chevron-right"></i></span></div>`;}
+function loanCard(l,withPay=false){return `<div class="c-card" data-action="view-loan" data-id="${l.id}"><div class="mini-avatar navy">${esc(l.id.slice(-2))}</div><div class="c-main"><strong>${l.id} · ${esc(l.customer)}</strong><small>${money0(l.amount)} · Inst ${money0(l.installment)}</small><div class="c-route">${esc(l.route)} · Bal ${money0(l.balance)}</div></div><div class="c-side">${withPay?`<button class="btn btn-primary btn-sm" data-nav="add-payment" style="pointer-events:auto">PAY</button>`:`<span class="badge blue">${esc(l.route)}</span>`}</div></div>`;}
+function routeCard(r){return `<div class="c-card" data-action="view-route" data-id="${r.id}"><div class="mini-avatar">${esc(r.id.slice(-2))}</div><div class="c-main"><strong>${esc(r.name)}</strong><small>${r.id} · ${esc(r.collector)} · ${r.customers} cust</small><div class="progress" style="margin-top:5px"><span style="width:${r.progress}%"></span></div></div><div class="c-side"><strong>${r.progress}%</strong><span class="badge navy">${money0(r.expected)}</span></div></div>`;}
+function finCard(t,i){const isInc=t.income>0;return `<div class="c-card" data-action="view-fin" data-id="${i}"><div class="mini-avatar ${isInc?"":"navy"}"><i data-lucide="${isInc?"arrow-down-to-line":"arrow-up-from-line"}" style="width:16px;height:16px"></i></div><div class="c-main"><strong>${esc(t.desc)}</strong><small>${esc(t.date)} · ${t.ref}</small><div class="c-route">${esc(t.cat)}</div></div><div class="c-side"><strong style="color:${isInc?"var(--blue-dark)":"var(--navy)"}">${isInc?"+ "+money0(t.income):"− "+money0(t.expense)}</strong><span class="badge ${isInc?"blue":"gray"}">${t.cat}</span></div></div>`;}
+/* FILTERS */
+function filteredHome(){return state.customers.filter(c=>(state.homeRoute==="All Routes"||c.route===state.homeRoute)&&(state.homeStatus==="All"||c.status===state.homeStatus)&&(!state.homeSearch||(c.id+" "+c.name+" "+c.phone).toLowerCase().includes(state.homeSearch.toLowerCase())));}
+function renderHomeGrid(){const g=document.getElementById("homeGrid"),p=document.getElementById("homePager"),cnt=document.getElementById("homeCount");if(!g)return;
+const f=filteredHome(),sz=pageSize(),total=Math.max(1,Math.ceil(f.length/sz));if(state.homePage>total)state.homePage=total;
+const slice=f.slice((state.homePage-1)*sz,state.homePage*sz);
+g.innerHTML=slice.length?slice.map(customerCard).join(""):`<div class="empty-note" style="grid-column:1/-1">No customers match. Adjust route, status or search — or tap <strong>INFO</strong> for a toast summary.</div>`;
+if(p)p.innerHTML=pagerHTML(state.homePage,total,"home");if(cnt)cnt.textContent=f.length+" found";lucide.createIcons();}
+function renderCustGrid(){const g=document.getElementById("custGrid"),p=document.getElementById("custPager");if(!g)return;const f=state.customers.filter(c=>!state.custSearch||(c.id+" "+c.name+" "+c.phone).toLowerCase().includes(state.custSearch.toLowerCase()));const sz=pageSize(),total=Math.max(1,Math.ceil(f.length/sz));if(state.custPage>total)state.custPage=total;g.innerHTML=f.slice((state.custPage-1)*sz,state.custPage*sz).map(customerCard).join("")||`<div class="empty-note" style="grid-column:1/-1">No customers.</div>`;p.innerHTML=pagerHTML(state.custPage,total,"cust");lucide.createIcons();}
+function renderLoanGrid(suffix,withPay){const g=document.getElementById(suffix+"Grid"),p=document.getElementById(suffix+"Pager");if(!g)return;const q=suffix==="loan"?state.loanSearch:state.paySearch;const cur=suffix==="loan"?state.loanPage:state.payPage;const f=state.loans.filter(l=>!q||(l.id+" "+l.customer).toLowerCase().includes(q.toLowerCase()));const sz=pageSize(),total=Math.max(1,Math.ceil(f.length/sz));let c=cur;if(c>total)c=total;if(suffix==="loan")state.loanPage=c;else state.payPage=c;g.innerHTML=f.slice((c-1)*sz,c*sz).map(l=>loanCard(l,withPay)).join("")||`<div class="empty-note" style="grid-column:1/-1">No loans.</div>`;p.innerHTML=pagerHTML(c,total,suffix);lucide.createIcons();}
+function renderFinGrid(){const g=document.getElementById("finGrid"),p=document.getElementById("finPager");if(!g)return;const sz=pageSize(),total=Math.max(1,Math.ceil(state.finance.length/sz));if(state.finPage>total)state.finPage=total;g.innerHTML=state.finance.slice((state.finPage-1)*sz,state.finPage*sz).map((t,i)=>finCard(t,(state.finPage-1)*sz+i)).join("");p.innerHTML=pagerHTML(state.finPage,total,"fin");lucide.createIcons();}
+/* PAGES */
+function home(){return `${pageHead("home")}
+<div class="home-filter-fixed"><div class="filter-2col">
+<div class="field"><label>Select Route</label><select id="homeRoute"><option ${state.homeRoute==="All Routes"?"selected":""}>All Routes</option>${state.routes.map(r=>`<option ${state.homeRoute===r.name?"selected":""}>${r.name}</option>`).join("")}</select></div>
+<div class="field"><label>Search Customer</label><div class="search-wrap"><i data-lucide="search"></i><input id="homeSearch" placeholder="ID, name or phone..." value="${esc(state.homeSearch)}"></div></div>
+</div><div class="chip-row">${["All","Active","Arrears","Completed"].map(s=>`<button class="chip ${state.homeStatus===s?"active":""}" data-action="home-status" data-s="${s}">${s}</button>`).join("")}<span class="chip-count" id="homeCount"></span></div></div>
+<div class="data-grid" id="homeGrid"></div><div class="pager" id="homePager"></div>`;}
+function daily(){return `${pageHead("daily",`<button class="btn btn-secondary btn-sm" data-action="refresh"><i data-lucide="refresh-cw"></i>REFRESH</button>`)}
+<div class="card daily-control"><div class="daily-top"><div class="radio-group">
+<label class="radio ${state.dailyMode==="today"?"checked":""}"><input type="radio" name="dmode" value="today" ${state.dailyMode==="today"?"checked":""}><span class="radio-dot"></span><span>Today Collection</span></label>
+<label class="radio ${state.dailyMode==="custom"?"checked":""}"><input type="radio" name="dmode" value="custom" ${state.dailyMode==="custom"?"checked":""}><span class="radio-dot"></span><span>Custom Date</span></label>
+</div><span class="badge navy" id="dailyModeBadge">LIVE</span></div>
+<div class="daily-controls-row"><div class="field"><label>Route</label><select id="dailyRoute"><option ${state.dailyRoute==="All Routes"?"selected":""}>All Routes</option>${state.routes.map(r=>`<option ${state.dailyRoute===r.name?"selected":""}>${r.name}</option>`).join("")}</select></div>
+<div class="field" id="dailyDateWrap" style="${state.dailyMode==="custom"?"":"display:none"}"><label>Select Date</label><input type="date" id="dailyDate" value="${state.dailyDate}" max="${TODAY}"></div>
+<div class="field btn-field"><label>&nbsp;</label><button class="btn btn-primary" data-action="daily-detail"><i data-lucide="list"></i>Detailed View</button></div></div></div>
+<div class="daily-tiles" id="dailyTiles"></div>
+<div class="daily-foot"><div class="daily-progress"><span style="white-space:nowrap">Progress</span><div class="progress"><span id="dailyProgBar" style="width:0%"></span></div><strong id="dailyProgTxt" style="white-space:nowrap">0%</strong></div><div class="action-row"><button class="btn btn-dark btn-sm" data-action="daily-detail"><i data-lucide="eye"></i>VIEW PAYERS</button><button class="btn btn-secondary btn-sm" data-action="daily-print"><i data-lucide="printer"></i>QUICK PRINT</button></div></div>`;}
+function infomations(){return `${pageHead("infomations",`<button class="btn btn-secondary btn-sm" data-action="refresh"><i data-lucide="refresh-cw"></i>REFRESH</button>`)}
+<div class="hero"><h3>Portfolio information at a glance</h3><p>Live synchronized records from all routes. Tap any card for a popup breakdown.</p><button class="btn btn-sm" data-nav="analyzer"><i data-lucide="chart-no-axes-combined"></i>OPEN ANALYZER</button></div>
+<div class="grid stats-4"><div data-action="info-pop" data-k="cust" style="cursor:pointer">${statMini("user-check","119","Active customers")}</div><div data-action="info-pop" data-k="loan" style="cursor:pointer">${statMini("badge-check","94","Active loans",true)}</div><div data-action="info-pop" data-k="done" style="cursor:pointer">${statMini("circle-check-big","43","Completed")}</div><div data-action="info-pop" data-k="arr" style="cursor:pointer">${statMini("triangle-alert","11","In arrears",true)}</div></div>
+<div class="grid two-col" style="flex:1;min-height:0;overflow:hidden"><div class="card" style="min-height:0;overflow:hidden"><div class="card-header"><div><h3>Route performance</h3><p>Tap a route for popup</p></div></div><div class="card-body" style="padding:8px 14px">${state.routes.map(r=>`<div class="route-row" data-action="view-route" data-id="${r.id}" style="cursor:pointer"><div class="route-meta"><span>${r.name} · ${r.customers} cust</span><strong>${r.progress}%</strong></div><div class="progress"><span style="width:${r.progress}%"></span></div></div>`).join("")}</div></div>
+<div class="card card-pad"><h3 style="margin:0 0 6px;font-size:13px">System summary</h3><div class="summary-list"><div class="summary-item"><span>Last sync</span><strong>Today, 02:42 PM</strong></div><div class="summary-item"><span>Data status</span><span class="badge blue">Synchronized</span></div><div class="summary-item"><span>Role</span><strong>Administrator</strong></div><div class="summary-item"><span>Version</span><strong>1.0 Light</strong></div></div></div></div>`;}
+function analyzer(){const tabs=["PAYMENT","ARREARS","SYSTEM","ROUTE"];return `${pageHead("analyzer",`<button class="btn btn-primary btn-sm" data-action="load"><i data-lucide="play"></i>LOAD REPORT</button>`)}
+<div class="tabs no-print" id="analyzerTabs">${tabs.map(t=>`<button class="tab ${state.analyzerTab===t?"active":""}" data-action="analyzer-tab" data-tab="${t}">${t}</button>`).join("")}</div>
+<div class="grid two-col" style="flex:1;min-height:0;overflow:hidden"><div class="card" style="min-height:0"><div class="card-header"><div><h3 id="chartTitle">${state.analyzerTab.charAt(0)+state.analyzerTab.slice(1).toLowerCase()} analysis</h3><p>Last seven periods · tap bars for popup</p></div><span class="badge blue">Live data</span></div><div class="card-body"><div class="chart" id="chart"></div></div></div>
+<div class="card card-pad"><h3 style="margin:0" id="analysisTitle">${state.analyzerTab.charAt(0)+state.analyzerTab.slice(1).toLowerCase()} indicators</h3><div class="summary-list" id="analysisSummary" style="margin-top:6px"></div><button class="btn btn-dark btn-sm" style="margin-top:8px" data-action="analyzer-popup"><i data-lucide="info"></i>FULL BREAKDOWN POPUP</button></div></div>`;}
+function updateAnalyzer(){const vals={PAYMENT:[42,65,55,80,72,91,68],ARREARS:[82,71,62,54,49,43,38],SYSTEM:[92,94,91,96,98,95,99],ROUTE:[55,74,68,83,77,88,81]}[state.analyzerTab];
+const days=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];const c=document.getElementById("chart");if(c)c.innerHTML=vals.map((h,i)=>`<div class="bar-group" data-action="bar-pop" data-d="${days[i]}" data-v="${h}" style="cursor:pointer"><div class="bar" style="height:${h}%"></div><small>${days[i]}</small></div>`).join("");
+const sums={PAYMENT:[money(128400),money(2130),"61","+8.4%"],ARREARS:[money(32800),money(2980),"11","-2.1%"],SYSTEM:["99.1%","12ms","0 errors","Stable"],ROUTE:["74.6%","137 cust",money(25400),"+5.2%"]}[state.analyzerTab];
+const labels={PAYMENT:["Total collected","Average payment","Successful records","Growth"],ARREARS:["Total arrears","Average arrears","Accounts","Trend"],SYSTEM:["Uptime","Sync latency","Failures","Health"],ROUTE:["Avg progress","Customers","Expected","Growth"]}[state.analyzerTab];
+const s=document.getElementById("analysisSummary");if(s)s.innerHTML=labels.map((l,i)=>`<div class="summary-item"><span>${l}</span><strong>${sums[i]}</strong></div>`).join("");
+const t1=document.getElementById("chartTitle"),t2=document.getElementById("analysisTitle");const nm=state.analyzerTab.charAt(0)+state.analyzerTab.slice(1).toLowerCase();if(t1)t1.textContent=nm+" analysis";if(t2)t2.textContent=nm+" indicators";lucide.createIcons();}
+function addPayment(){return `${pageHead("add-payment")}
+<div class="pay-tabs"><button class="${state.payTab==="entry"?"on":""}" data-action="pay-tab" data-t="entry">1 · Payment Entry</button><button class="${state.payTab==="detail"?"on":""}" data-action="pay-tab" data-t="detail">2 · Loan Details</button></div>
+<div class="grid two-col" style="flex:1;min-height:0;overflow:hidden" id="payGrid">
+<form class="card" data-form="payment" id="payForm" style="min-height:0;overflow:hidden;display:flex;flex-direction:column"><div class="card-header"><div><h3>Payment entry</h3><p>Lookup before saving</p></div><span class="badge blue">Editable</span></div>
+<div class="card-body" style="flex:1;min-height:0"><div class="field"><label>Customer ID Lookup</label><div class="input-row"><input id="paymentCustomerId" value="C-1001" required><button type="button" class="btn btn-dark btn-sm" data-action="lookup-customer"><i data-lucide="search"></i>LOOKUP</button></div></div>
+<div class="form-grid" style="margin-top:8px"><div class="field"><label>Loan Number</label><input id="paymentLoan" value="L-24091" readonly></div><div class="field"><label>Balance</label><input id="paymentBalance" value="Rs 42,800.00" readonly></div><div class="field"><label>Amount</label><input type="number" min="1" value="2500" required></div><div class="field"><label>Date</label><input type="date" value="${TODAY}" required></div><div class="field"><label>Method</label><select><option>Cash</option><option>Bank Transfer</option><option>Card</option></select></div><div class="field"><label>SMS</label><select><option>Yes — send</option><option>No</option></select></div></div>
+<div class="action-row" style="margin-top:10px"><button class="btn btn-primary btn-sm" type="submit"><i data-lucide="save"></i>SAVE</button><button class="btn btn-secondary btn-sm" type="button" data-action="print"><i data-lucide="printer"></i>RECEIPT</button><button class="btn btn-secondary btn-sm" type="button" data-action="sms"><i data-lucide="message-square"></i>SMS</button></div></div></form>
+<div class="card card-pad" id="payDetail" style="min-height:0"><h3 style="margin:0">Customer & loan</h3><div class="customer-cell" style="padding:8px 0"><div class="mini-avatar">NP</div><div><strong id="paymentName">Nimal Perera</strong><br><small id="paymentMeta" style="color:var(--muted)">C-1001 · Colombo 01</small></div></div>
+<div class="summary-list"><div class="summary-item"><span>Loan amount</span><strong id="paymentAmount">${money(75000)}</strong></div><div class="summary-item"><span>Installment</span><strong id="paymentInstallment">${money(2500)}</strong></div><div class="summary-item"><span>Outstanding</span><strong id="paymentOutstanding">${money(42800)}</strong></div><div class="summary-item"><span>Status</span><span class="badge blue">Active</span></div></div>
+<div class="notice-box" style="margin-top:8px">Saving works even if Bluetooth fails. Printer errors open as popups + logs.</div></div></div>`;}
+function printReceipt(){return `${pageHead("print-receipt",`<button class="btn btn-primary btn-sm" data-action="print"><i data-lucide="printer"></i>PRINT</button>`)}
+<div class="grid two-col" style="flex:1;min-height:0;overflow:hidden"><div class="card" style="min-height:0;overflow:hidden;display:flex;flex-direction:column"><div class="card-header"><div><h3>Find receipt</h3><p>Search opens result as popup card</p></div></div><div class="card-body"><div class="field"><label>Receipt / Customer / Loan</label><div class="input-row"><input id="receiptSearch" value="R-90881" placeholder="Enter receipt..."><button class="btn btn-dark btn-sm" data-action="find-receipt"><i data-lucide="search"></i>FIND</button></div></div>
+<div style="text-align:center;padding:10px 0;border-bottom:1px dashed #B9C6D8;margin-top:6px"><h2 style="margin:0">ALFACloud Finance</h2><p style="margin:2px 0 0;color:var(--muted);font-size:10px">Payment Receipt · <span id="rcNo">R-90881</span></p></div>
+<div class="summary-list"><div class="summary-item"><span>Customer</span><strong>Nimal Perera</strong></div><div class="summary-item"><span>Customer ID</span><strong>C-1001</strong></div><div class="summary-item"><span>Loan</span><strong>L-24091</strong></div><div class="summary-item"><span>Date</span><strong>${fmtDisplay(TODAY)}</strong></div><div class="summary-item"><span>Amount</span><strong>${money(2500)}</strong></div><div class="summary-item"><span>Balance</span><strong>${money(40300)}</strong></div></div></div></div>
+<div class="fit"><div class="card card-pad"><h3 style="margin:0 0 6px">Printer status</h3><div class="notice-box ${state.printer.connected?"":"warn"}"><strong>${state.printer.connected?"Bluetooth connected ("+esc(state.printer.mac)+").":"Bluetooth disconnected."}</strong><br>Errors are logged without blocking payments.</div><div class="action-row" style="margin-top:10px"><button class="btn btn-secondary btn-sm" data-nav="printer-settings"><i data-lucide="settings"></i>SETTINGS</button><button class="btn btn-dark btn-sm" data-action="print"><i data-lucide="printer"></i>TEST 58MM</button></div></div>
+<div class="card card-pad"><h3 style="margin:0 0 6px">58mm preview</h3><div class="receipt-58" style="margin:0 auto">ALFACloud Finance<br>R-90881 · C-1001<br>PAID: Rs 2,500.00<br>TIME: 08:45 AM<br>Thank you!</div></div></div></div>`;}
+function financial(){return `${pageHead("financial",`<button class="btn btn-primary btn-sm" data-action="add-expenditure"><i data-lucide="plus"></i>ADD EXPENDITURE</button>`)}
+<div class="grid stats-4"><div data-action="fin-pop" data-k="inc" style="cursor:pointer">${statMini("arrow-down-to-line",money0(128400),"Total income")}</div><div data-action="fin-pop" data-k="exp" style="cursor:pointer">${statMini("arrow-up-from-line",money0(18600),"Expenditures",true)}</div><div data-action="fin-pop" data-k="net" style="cursor:pointer">${statMini("scale",money0(109800),"Net cash flow")}</div><div data-action="fin-pop" data-k="mar" style="cursor:pointer">${statMini("percent","85.5%","Margin",true)}</div></div>
+<div class="card" style="flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column"><div class="card-header"><div><h3>Transactions as cards</h3><p>Tap any card for modal + edit form</p></div><button class="btn btn-primary btn-sm" data-action="load"><i data-lucide="download"></i>LOAD</button></div>
+<div style="padding:8px 12px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;background:#FAFBFD"><div class="field" style="margin:0"><label>From</label><input type="date" value="${TODAY.slice(0,8)}01"></div><div class="field" style="margin:0"><label>To</label><input type="date" value="${TODAY}"></div><div class="field" style="margin:0"><label>Category</label><select><option>All</option><option>Collections</option><option>Travel</option><option>Office</option></select></div></div>
+<div style="flex:1;min-height:0;overflow:hidden;padding:9px 12px"><div class="data-grid" id="finGrid" style="height:100%"></div></div><div class="pager" id="finPager" style="padding:6px"></div></div>`;}
+function addLoan(){const s=state.addLoanStep;return `${pageHead("add-loan")}
+<div class="card" style="flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column"><div class="card-header"><div><h3>New loan · Step ${s} of 2</h3><p>No-scroll stepper</p></div><span class="badge blue">Admin editable</span></div>
+<div class="card-body" style="flex:1;min-height:0"><div class="stepper"><div class="step ${s>=1?"active":""}"></div><div class="step ${s>=2?"active":""}"></div></div><div class="step-labels"><span class="${s===1?"on":""}">Customer & Amount</span><span class="${s===2?"on":""}">Terms & Result</span></div>
+<form data-form="loan" id="loanForm"><div style="${s===1?"":"display:none"}"><div class="form-grid three"><div class="field"><label>Customer</label><select required>${state.customers.map(c=>`<option>${c.id} — ${esc(c.name)}</option>`).join("")}</select></div><div class="field"><label>Amount</label><input id="loanAmount" type="number" value="50000" min="1" required></div><div class="field"><label>Rate %</label><input id="loanRate" type="number" value="20" min="0" step=".1" required></div></div>
+<div class="action-row" style="margin-top:12px"><button type="button" class="btn btn-primary" data-action="loan-next">NEXT<i data-lucide="arrow-right"></i></button></div></div>
+<div style="${s===2?"":"display:none"}"><div class="form-grid three"><div class="field"><label>Installments</label><input id="loanDuration" type="number" value="25" min="1" required></div><div class="field"><label>Start</label><input type="date" value="${TODAY}"></div><div class="field"><label>Type</label><select><option>Daily</option><option>Weekly</option><option>Monthly</option></select></div><div class="field full"><div class="result-box"><div><span>Installment</span><strong id="loanInstallment">${money(2400)}</strong></div><div><span>End Value</span><strong id="loanEndValue">${money(60000)}</strong></div><div><span>Profit</span><strong id="loanProfit">${money(10000)}</strong></div></div></div></div>
+<div class="action-row" style="margin-top:12px"><button type="button" class="btn btn-secondary" data-action="loan-back">BACK</button><button type="button" class="btn btn-secondary" data-action="calculate-loan"><i data-lucide="calculator"></i>CALCULATE</button><button class="btn btn-primary" type="submit"><i data-lucide="save"></i>SAVE LOAN</button></div></div></form></div></div>`;}
+function addCustomer(){const s=state.addCustStep;return `${pageHead("add-customer")}
+<div class="card" style="flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column"><div class="card-header"><div><h3>Registration · Step ${s} of 3</h3><p>Compact — no scrolling needed</p></div><span class="badge navy">Step ${s}/3</span></div>
+<div class="card-body" style="flex:1;min-height:0"><div class="stepper"><div class="step ${s>=1?"active":""}"></div><div class="step ${s>=2?"active":""}"></div><div class="step ${s>=3?"active":""}"></div></div>
+<form data-form="customer" id="custForm">
+<div style="${s===1?"":"display:none"}"><div class="form-grid three"><div class="field"><label>Full Name</label><input name="name" required placeholder="Full name"></div><div class="field"><label>NIC</label><input required placeholder="NIC"></div><div class="field"><label>Occupation</label><input placeholder="Occupation"></div></div><div class="action-row" style="margin-top:12px"><button type="button" class="btn btn-primary" data-action="cust-next">NEXT<i data-lucide="arrow-right"></i></button></div></div>
+<div style="${s===2?"":"display:none"}"><div class="form-grid three"><div class="field"><label>Telephone</label><input name="phone" required placeholder="07X XXX XXXX"></div><div class="field"><label>Alt Phone</label><input placeholder="Optional"></div><div class="field"><label>Route</label><select name="route">${state.routes.map(r=>`<option>${r.name}</option>`).join("")}</select></div><div class="field full"><label>Address</label><textarea required placeholder="Permanent address"></textarea></div></div><div class="action-row" style="margin-top:12px"><button type="button" class="btn btn-secondary" data-action="cust-back">BACK</button><button type="button" class="btn btn-primary" data-action="cust-next">NEXT<i data-lucide="arrow-right"></i></button></div></div>
+<div style="${s===3?"":"display:none"}"><div class="form-grid three"><div class="field"><label>Guarantor</label><input placeholder="Guarantor name"></div><div class="field"><label>Guarantor Contact</label><input placeholder="Phone"></div><div class="field"><label>Reg Date</label><input type="date" value="${TODAY}"></div></div><div class="notice-box" style="margin-top:10px">Review details, then save. New customer appears instantly in Home + Managers via cards.</div><div class="action-row" style="margin-top:12px"><button type="button" class="btn btn-secondary" data-action="cust-back">BACK</button><button class="btn btn-primary" type="submit"><i data-lucide="user-plus"></i>ADD CUSTOMER</button></div></div>
+</form></div></div>`;}
+function loanManager(){return `${pageHead("loan-manager",`<button class="btn btn-primary btn-sm" data-nav="add-loan"><i data-lucide="plus"></i>ADD LOAN</button>`)}
+<div class="home-filter-fixed"><div class="filter-2col"><div class="field"><label>Search Loans</label><div class="search-wrap"><i data-lucide="search"></i><input id="loanSearch" placeholder="Loan ID or customer..." value="${esc(state.loanSearch)}"></div></div><div class="field"><label>Records</label><div style="min-height:38px;display:flex;align-items:center"><span class="badge navy">${state.loans.length} loans · cards + modals</span></div></div></div></div>
+<div class="data-grid" id="loanGrid"></div><div class="pager" id="loanPager"></div>`;}
+function paymentManager(){return `${pageHead("payment-manager",`<button class="btn btn-primary btn-sm" data-nav="add-payment"><i data-lucide="plus"></i>NEW PAYMENT</button>`)}
+<div class="home-filter-fixed"><div class="filter-2col"><div class="field"><label>Search Loan</label><div class="search-wrap"><i data-lucide="search"></i><input id="paySearch" placeholder="Loan ID or customer..." value="${esc(state.paySearch)}"></div></div><div class="field"><label>Route</label><select id="payRoute"><option>All Routes</option>${state.routes.map(r=>`<option>${r.name}</option>`).join("")}</select></div></div></div>
+<div class="data-grid" id="payMgrGrid"></div><div class="pager" id="payMgrPager"></div>`;}
+function customerManager(){return `${pageHead("customer-manager",`<button class="btn btn-primary btn-sm" data-nav="add-customer"><i data-lucide="plus"></i>ADD CUSTOMER</button>`)}
+<div class="home-filter-fixed"><div class="filter-2col"><div class="field"><label>Search Customers</label><div class="search-wrap"><i data-lucide="search"></i><input id="custSearch" placeholder="ID, name or phone..." value="${esc(state.custSearch)}"></div></div><div class="field"><label>Records</label><div style="min-height:38px;display:flex;align-items:center"><span class="badge blue">${state.customers.length} customers</span></div></div></div></div>
+<div class="data-grid" id="custGrid"></div><div class="pager" id="custPager"></div>`;}
+function calculator(){return `${pageHead("calculator")}
+<div class="grid two-col" style="flex:1;min-height:0;overflow:hidden"><div class="card"><div class="card-header"><div><h3>Loan inputs</h3><p>Instant estimate</p></div></div><div class="card-body"><div class="form-grid"><div class="field"><label>Amount</label><input id="calcAmount" type="number" value="100000"></div><div class="field"><label>Rate %</label><input id="calcRate" type="number" value="20" step=".1"></div><div class="field full"><label>Installments</label><input id="calcDuration" type="number" value="30"></div></div><button class="btn btn-primary" style="margin-top:10px" data-action="calculator"><i data-lucide="calculator"></i>CALCULATE</button></div></div>
+<div class="card card-pad"><h3 style="margin:0">Result</h3><div class="summary-list" style="margin-top:4px"><div class="summary-item"><span>Installment</span><strong id="calcInstallment">${money(4000)}</strong></div><div class="summary-item"><span>End Value</span><strong id="calcEnd">${money(120000)}</strong></div><div class="summary-item"><span>Profit</span><strong id="calcProfit">${money(20000)}</strong></div><div class="summary-item"><span>Interest</span><strong id="calcInterest">20.00%</strong></div></div><button class="btn btn-dark btn-sm" style="margin-top:8px" data-action="calc-popup"><i data-lucide="info"></i>SCHEDULE POPUP</button></div></div>`;}
+function routeManager(){return `${pageHead("route-manager",`<button class="btn btn-primary btn-sm" data-action="add-route"><i data-lucide="plus"></i>ADD ROUTE</button>`)}
+<div class="data-grid" style="grid-template-columns:repeat(3,1fr)" id="routeGrid">${state.routes.map(routeCard).join("")}</div>
+<div class="notice-box">Routes render as cards. Tap a card for collector popup with edit form — no tables system-wide.</div>`;}
+function generalSettings(){const t=state.settingsTab;return `${pageHead("general-settings",`<button class="btn btn-primary btn-sm" data-action="save-settings"><i data-lucide="save"></i>SAVE</button>`)}
+<div class="tabs"><button class="tab ${t==="prefs"?"active":""}" data-action="set-tab" data-t="prefs">PREFERENCES</button><button class="tab ${t==="company"?"active":""}" data-action="set-tab" data-t="company">COMPANY</button><button class="tab ${t==="server"?"active":""}" data-action="set-tab" data-t="server">SERVER</button></div>
+<div class="card card-pad" style="flex:1;min-height:0;overflow:hidden">
+<div style="${t==="prefs"?"":"display:none"}"><div class="toggle-row"><div><strong>Hide Completed Loans</strong><small>Exclude closed loans</small></div><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div><div class="toggle-row"><div><strong>Single Payment Only</strong><small>Restrict simultaneous entries</small></div><label class="switch"><input type="checkbox"><span class="slider"></span></label></div><div class="toggle-row"><div><strong>Print Dynamic Contacts</strong><small>Use current contacts</small></div><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div></div>
+<div style="${t==="company"?"":"display:none"}"><div class="form-grid"><div class="field full"><label>Company</label><input value="ALFACloud Finance"></div><div class="field"><label>Phone</label><input value="+94 11 234 5678"></div><div class="field"><label>Email</label><input value="office@alfacloud.lk"></div></div></div>
+<div style="${t==="server"?"":"display:none"}"><div class="form-grid three"><div class="field"><label>Server URL</label><input value="https://api.alfacloud.lk/v1"></div><div class="field"><label>Sync</label><select><option>Every 15 min</option><option>Every 30 min</option><option>Manual</option></select></div><div class="field"><label>Timeout</label><input value="30 seconds"></div></div><div style="margin-top:8px"><span class="badge blue">Connected</span></div></div>
+</div>`;}
+function printerSettings(){return `${pageHead("printer-settings",`<button class="btn btn-primary btn-sm" data-action="save-printer"><i data-lucide="save"></i>SAVE</button><button class="btn btn-dark btn-sm" data-action="restart"><i data-lucide="rotate-cw"></i>RESTART</button>`)}
+<div class="grid two-col" style="flex:1;min-height:0;overflow:hidden"><div class="card" style="min-height:0"><div class="card-header"><div><h3>Bluetooth 58mm printer</h3><p>${esc(state.printer.mac)}</p></div><span class="badge ${state.printer.connected?"blue":"navy"}">${state.printer.connected?"Connected":"Disconnected"}</span></div>
+<div class="card-body"><div class="field"><label>Printer MAC Address</label><div class="input-row"><input id="macAddress" value="${esc(state.printer.mac)}"><button class="btn btn-secondary btn-sm" data-action="edit-mac">EDIT</button></div></div>
+<div class="action-row" style="margin-top:10px"><button class="btn btn-secondary btn-sm" data-action="clear-mac"><i data-lucide="eraser"></i>CLEAR</button><button class="btn ${state.printer.connected?"btn-dark":"btn-primary"} btn-sm" data-action="toggle-bluetooth"><i data-lucide="bluetooth"></i>${state.printer.connected?"DISCONNECT":"CONNECT"}</button><button class="btn btn-secondary btn-sm" data-action="test-print"><i data-lucide="printer"></i>TEST PRINT</button></div>
+<div class="notice-box ${state.printer.connected?"":"warn"}" style="margin-top:10px">${state.printer.connected?"Ready for Daily Collection batch prints. Each payer prints in order: Customer ID + Amount.":"If Bluetooth is off, errors are logged as popups. Customer, loan and payment flows continue normally."}</div></div></div>
+<div class="card" style="min-height:0;overflow:hidden;display:flex;flex-direction:column"><div class="card-header"><div><h3>Application log</h3><p>Last 5 · full log in popup</p></div><div class="action-row"><button class="btn btn-secondary btn-sm" data-action="view-full-log">VIEW ALL</button><button class="btn btn-secondary btn-sm" data-action="clear-log">CLEAR</button></div></div><div class="card-body log-list" id="logList" style="flex:1;min-height:0">${logHTML()}</div></div></div>`;}
+function about(){return `${pageHead("about")}
+<div class="grid two-col" style="flex:1;min-height:0;overflow:hidden"><div class="card card-pad" style="text-align:center"><div class="about-avatar">RK</div><h3 style="margin:0">Rasika Kulasinghe</h3><p style="margin:4px 0 0;color:var(--muted);font-size:11px">Developer of ALFACloud</p><div class="summary-list" style="text-align:left;margin-top:8px"><div class="summary-item"><span>Contact</span><strong>developer@alfacloud.lk</strong></div><div class="summary-item"><span>Phone</span><strong>+94 77 000 0000</strong></div><div class="summary-item"><span>Version</span><strong>1.0 Light · 2-color</strong></div></div></div>
+<div class="card card-pad"><h3 style="margin:0">About</h3><p style="color:var(--muted);font-size:11px;line-height:1.6">ALFACloud V1.0 — light-mode loan & daily collection system. All data uses cards, modals, forms, toasts and popups. No tables. Compact fit-to-screen design for phones and desktop.</p><div class="summary-list"><div class="summary-item"><span>Build</span><strong>1.0.0 Production</strong></div><div class="summary-item"><span>License</span><strong>Commercial</strong></div><div class="summary-item"><span>Copyright</span><strong>© 2025 Rasika Kulasinghe</strong></div></div></div></div>`;}
+const renderers={home,daily,infomations,analyzer,"add-payment":addPayment,"print-receipt":printReceipt,financial,"add-loan":addLoan,"add-customer":addCustomer,"loan-manager":loanManager,"payment-manager":paymentManager,"customer-manager":customerManager,calculator,"route-manager":routeManager,"general-settings":generalSettings,"printer-settings":printerSettings,about};
+function render(page){if(!renderers[page])return;state.page=page;document.getElementById("content").innerHTML=renderers[page]();document.getElementById("crumb").textContent=meta[page][0];
+document.querySelectorAll(".nav-item").forEach(n=>n.classList.toggle("active",n.dataset.nav===page));
+document.querySelectorAll("#bottomNav button").forEach(b=>b.classList.toggle("active",b.dataset.nav===page));
+document.getElementById("bottomNav").classList.toggle("show",page==="home");
+document.body.classList.remove("sidebar-open");closeModal();lucide.createIcons();
+if(page==="home")renderHomeGrid();if(page==="daily")updateDailyTiles();if(page==="analyzer")updateAnalyzer();if(page==="customer-manager")renderCustGrid();if(page==="loan-manager")renderLoanGrid("loan",false);if(page==="payment-manager"){const g=document.getElementById("payMgrGrid"),pg=document.getElementById("payMgrPager");const f=state.loans.filter(l=>!state.paySearch||(l.id+" "+l.customer).toLowerCase().includes(state.paySearch.toLowerCase()));const sz=pageSize(),total=Math.max(1,Math.ceil(f.length/sz));if(state.payPage>total)state.payPage=total;if(g)g.innerHTML=f.slice((state.payPage-1)*sz,state.payPage*sz).map(l=>loanCard(l,true)).join("");if(pg)pg.innerHTML=pagerHTML(state.payPage,total,"payMgr");lucide.createIcons();}if(page==="financial")renderFinGrid();
+if(page==="add-payment")applyPayTab();}
+function applyPayTab(){if(state.page!=="add-payment")return;const isM=window.innerWidth<=820;const f=document.getElementById("payForm"),d=document.getElementById("payDetail");if(!f||!d)return;if(!isM){f.style.display="";d.style.display="";return;}f.style.display=state.payTab==="entry"?"":"none";d.style.display=state.payTab==="detail"?"":"none";}
+/* POPUPS */
+function viewCustomer(id){const c=state.customers.find(x=>x.id===id);if(!c)return;const loan=state.loans.find(l=>l.cid===id);
+openModal(c.name,c.id+" · "+c.route+ " · "+c.status,`<div class="customer-cell" style="margin-bottom:10px"><div class="mini-avatar ${c.status==="Arrears"?"navy":""}" style="width:44px;height:44px">${initials(c.name)}</div><div><strong>${esc(c.name)}</strong><br><small style="color:var(--muted)">${c.id} · ${esc(c.phone)}</small></div><span class="badge ${badgeFor(c.status)}" style="margin-left:auto">${c.status}</span></div>
+<div class="pay-grid" style="grid-template-columns:1fr 1fr"><div><span>Phone</span><strong>${esc(c.phone)}</strong></div><div><span>Route</span><strong>${esc(c.route)}</strong></div><div><span>Balance</span><strong>${money(c.balance)}</strong></div><div><span>Loan</span><strong>${loan?loan.id:"—"}</strong></div></div>
+${loan?`<div class="notice-box" style="margin-top:8px">Installment <strong>${money0(loan.installment)}</strong> · Outstanding <strong>${money0(loan.balance)}</strong></div>`:`<div class="empty-note" style="margin-top:8px">No active loan. Create one from Add New Loan.</div>`}`,
+`<button class="btn btn-secondary" data-action="edit-row">EDIT</button><button class="btn btn-secondary" data-action="delete-customer" data-id="${c.id}">DELETE</button><button class="btn btn-dark" data-nav="print-receipt">RECEIPT</button><button class="btn btn-primary" data-nav="add-payment">PAYMENT</button>`);}
+function viewLoan(id){const l=state.loans.find(x=>x.id===id);if(!l)return;
+openModal("Loan "+l.id,l.customer+" · "+l.route,`<div class="pay-grid" style="grid-template-columns:1fr 1fr"><div><span>Customer</span><strong>${esc(l.customer)}</strong></div><div><span>Customer ID</span><strong>${l.cid}</strong></div><div><span>Amount</span><strong>${money(l.amount)}</strong></div><div><span>Installment</span><strong>${money(l.installment)}</strong></div><div><span>Balance</span><strong>${money(l.balance)}</strong></div><div><span>Route</span><strong>${esc(l.route)}</strong></div></div>
+<div class="field" style="margin-top:10px"><label>Edit Balance (admin)</label><div class="input-row"><input id="editLoanBal" type="number" value="${l.balance}"><button class="btn btn-dark btn-sm" data-action="save-loan-bal" data-id="${l.id}">SAVE</button></div></div>`,
+`<button class="btn btn-secondary" data-action="close-modal">CLOSE</button><button class="btn btn-secondary" data-action="delete-row">DELETE</button><button class="btn btn-primary" data-nav="add-payment">NEW PAYMENT</button>`);}
+function viewRoute(id){const r=state.routes.find(x=>x.id===id);if(!r)return;const members=state.customers.filter(c=>c.route===r.name);
+openModal(r.name,r.id+" · Collector "+r.collector,`<div class="pay-grid" style="grid-template-columns:1fr 1fr"><div><span>Collector</span><strong>${esc(r.collector)}</strong></div><div><span>Customers</span><strong>${r.customers}</strong></div><div><span>Expected</span><strong>${money0(r.expected)}</strong></div><div><span>Progress</span><strong>${r.progress}%</strong></div></div>
+<div class="progress" style="margin:10px 0"><span style="width:${r.progress}%"></span></div>
+<div class="field"><label>Reassign Collector</label><div class="input-row"><input id="routeCollector" value="${esc(r.collector)}"><button class="btn btn-dark btn-sm" data-action="save-collector" data-id="${r.id}">SAVE</button></div></div>
+<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">${members.slice(0,6).map(m=>`<span class="badge blue">${m.id} · ${esc(m.name.split(" ")[0])}</span>`).join("")}<span class="badge line">+${Math.max(0,members.length-6)} more</span></div>`,
+`<button class="btn btn-secondary" data-action="close-modal">CLOSE</button><button class="btn btn-primary" data-action="route-collect" data-r="${esc(r.name)}">VIEW COLLECTION</button>`);}
+function calculate(prefix){const amt=Number(document.getElementById(prefix+"Amount")?.value||0),rate=Number(document.getElementById(prefix+"Rate")?.value||0),dur=Number(document.getElementById(prefix+"Duration")?.value||1);
+if(amt<=0||rate<0||dur<=0){toast("Invalid calculation","Enter positive amount and duration.","navy");return;}
+const profit=amt*rate/100,end=amt+profit,inst=end/dur;
+if(prefix==="calc"){document.getElementById("calcInstallment").textContent=money(inst);document.getElementById("calcEnd").textContent=money(end);document.getElementById("calcProfit").textContent=money(profit);document.getElementById("calcInterest").textContent=rate.toFixed(2)+"%";}
+else{document.getElementById("loanInstallment").textContent=money(inst);document.getElementById("loanEndValue").textContent=money(end);document.getElementById("loanProfit").textContent=money(profit);}
+toast("Calculation complete","Loan values updated.");}
+/* EVENTS */
+document.addEventListener("click",e=>{
+const nav=e.target.closest("[data-nav]");
+if(nav){const t=nav.dataset.nav;if(t==="logout"){document.getElementById("loginScreen").style.display="grid";toast("Signed out","Admin session ended.","navy");return;}render(t);return;}
+const b=e.target.closest("[data-action]");if(!b)return;const a=b.dataset.action;
+if(a==="close-modal")closeModal();
+else if(a==="refresh"){b.querySelector("i")?.classList.add("spin");toast("Data refreshed","Latest synchronized records displayed.");setTimeout(()=>b.querySelector("i")?.classList.remove("spin"),800);}
+else if(a==="notifications")toast("No new alerts","All notifications up to date.");
+else if(a==="print"||a==="test-print"){if(!state.printer.connected){addLog("error","Bluetooth print failed — printer unavailable.");toast("Printer unavailable","Connect 58mm printer. Core functions unaffected.","navy");openModal("Print Failed","58mm Bluetooth",`<div class="notice-box warn"><strong>Printer ${esc(state.printer.mac)} unavailable.</strong><br>Error logged. Try connecting in Printer Settings.</div>`,`<button class="btn btn-secondary" data-action="close-modal">CLOSE</button><button class="btn btn-dark" data-nav="printer-settings">SETTINGS</button>`);}else{addLog("info",`Test receipt sent to ${state.printer.mac}.`);toast("Receipt sent","Sent to 58mm Bluetooth printer.");openModal("Test Print Sent","58mm · "+state.printer.mac,`<div class="receipt-58"><div style="text-align:center;font-weight:800">ALFACloud Finance</div><div style="text-align:center;font-size:10px">*** TEST ***</div><div style="border-top:1px dashed #0A2540;margin:6px 0"></div><div>PRINTER: OK</div><div>MAC: ${esc(state.printer.mac)}</div><div>TIME: ${new Date().toLocaleTimeString()}</div><div style="border-top:1px dashed #0A2540;margin:6px 0"></div><div style="text-align:center">Ready!</div></div>`,`<button class="btn btn-primary" data-action="close-modal">DONE</button>`);}}
+else if(a==="load"||a==="detailed")toast("Data loaded","Requested records displayed.");
+else if(a==="daily-detail")openDailyDetail();
+else if(a==="daily-print"){const d=getDailyData();closeModal();setTimeout(()=>startBatchPrint(d.list),120);}
+else if(a==="sms")toast("SMS sent","Payment confirmation sent.");
+else if(a==="calculator")calculate("calc");
+else if(a==="calculate-loan")calculate("loan");
+else if(a==="lookup-customer"){const id=document.getElementById("paymentCustomerId").value.trim().toUpperCase();const c=state.customers.find(x=>x.id===id);const l=state.loans.find(x=>x.cid===id);if(!c||!l){toast("Customer not found","Check ID and retry.","navy");return;}document.getElementById("paymentName").textContent=c.name;document.getElementById("paymentMeta").textContent=c.id+" · "+c.route;document.getElementById("paymentLoan").value=l.id;document.getElementById("paymentBalance").value=money(l.balance);document.getElementById("paymentAmount").textContent=money(l.amount);document.getElementById("paymentInstallment").textContent=money(l.installment);document.getElementById("paymentOutstanding").textContent=money(l.balance);toast("Customer loaded",c.name+" — active loan found.");}
+else if(a==="view-customer")viewCustomer(b.dataset.id);
+else if(a==="view-loan"){if(e.target.closest("[data-nav]"))return;viewLoan(b.dataset.id);}
+else if(a==="view-route")viewRoute(b.dataset.id);
+else if(a==="view-fin"){const t=state.finance[+b.dataset.id];if(!t)return;openModal(t.ref,t.desc,`<div class="pay-grid"><div><span>Date</span><strong>${esc(t.date)}</strong></div><div><span>Category</span><strong>${esc(t.cat)}</strong></div><div><span>Income</span><strong>${t.income?money(t.income):"—"}</strong></div><div><span>Expense</span><strong>${t.expense?money(t.expense):"—"}</strong></div></div><div class="field" style="margin-top:10px"><label>Edit Note</label><input value="${esc(t.desc)}"></div>`,`<button class="btn btn-secondary" data-action="close-modal">CLOSE</button><button class="btn btn-dark" data-action="edit-row">SAVE NOTE</button>`);}
+else if(a==="page"){const k=b.dataset.key,p=+b.dataset.p;if(k==="home"){state.homePage=p;renderHomeGrid();}else if(k==="cust"){state.custPage=p;renderCustGrid();}else if(k==="loan"){state.loanPage=p;renderLoanGrid("loan",false);}else if(k==="payMgr"){state.payPage=p;render("payment-manager");}else if(k==="fin"){state.finPage=p;renderFinGrid();}}
+else if(a==="home-status"){state.homeStatus=b.dataset.s;state.homePage=1;document.querySelectorAll(".chip").forEach(c=>c.classList.toggle("active",c.dataset.s===state.homeStatus));renderHomeGrid();}
+else if(a==="analyzer-tab"){state.analyzerTab=b.dataset.tab;document.querySelectorAll("#analyzerTabs .tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===state.analyzerTab));updateAnalyzer();}
+else if(a==="bar-pop")toast(b.dataset.d+" · "+b.dataset.v+"%","Tap LOAD REPORT for full popup.","navy");
+else if(a==="analyzer-popup"){openModal(state.analyzerTab+" Breakdown","Full 7-period popup",`<div class="summary-list">${["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map((d,i)=>`<div class="summary-item"><span>${d}</span><strong>${document.querySelectorAll("#chart .bar")[i]?.style.height||"—"}</strong></div>`).join("")}</div>`,`<button class="btn btn-primary" data-action="close-modal">GOT IT</button>`);}
+else if(a==="info-pop"){const m={cust:["Active Customers","119 across 3 routes. Colombo 01 leads at 82%."],loan:["Active Loans","94 loans · Portfolio Rs 475,000"],done:["Completed","43 closed · 100% recovered"],arr:["Arrears","11 accounts · Rs 32,800 · action needed"]}[b.dataset.k];openModal(m[0],"Popup breakdown",`<div class="notice-box navy">${m[1]}</div><div class="action-row" style="margin-top:10px"><button class="btn btn-secondary btn-sm" data-nav="customer-manager">VIEW CUSTOMERS</button><button class="btn btn-secondary btn-sm" data-nav="loan-manager">VIEW LOANS</button></div>`,`<button class="btn btn-primary" data-action="close-modal">CLOSE</button>`);}
+else if(a==="fin-pop"){openModal("Financial Popup",b.dataset.k.toUpperCase(),`<div class="notice-box">Detailed ${esc(b.dataset.k)} breakdown loaded. Use LOAD with filters for date-range modal reports.</div>`,`<button class="btn btn-primary" data-action="close-modal">OK</button>`);}
+else if(a==="calc-popup"){openModal("Repayment Schedule","30-installment preview",`<div class="pay-grid" style="grid-template-columns:1fr 1fr 1fr">${[1,2,3,4,5,6].map(i=>`<div><span>Inst ${i}</span><strong>${money0(4000)}</strong></div>`).join("")}</div><div class="empty-note" style="margin-top:8px">Showing first 6 of 30. Full schedule available after loan creation.</div>`,`<button class="btn btn-primary" data-action="close-modal">CLOSE</button>`);}
+else if(a==="delete-row"){openModal("Delete Record?","Admin action",`<div class="notice-box warn">This deletion cannot be undone. Continue?</div>`,`<button class="btn btn-secondary" data-action="close-modal">CANCEL</button><button class="btn btn-dark" data-action="confirm-delete">DELETE</button>`);}
+else if(a==="confirm-delete"){closeModal();toast("Record deleted","Selected record removed.");}
+else if(a==="delete-customer"){const id=b.dataset.id;openModal("Delete "+id+"?","Admin",`<div class="notice-box warn">Remove customer <strong>${id}</strong>? Loans linked will be hidden.</div>`,`<button class="btn btn-secondary" data-action="close-modal">CANCEL</button><button class="btn btn-dark" data-action="confirm-del-cust" data-id="${id}">DELETE</button>`);}
+else if(a==="confirm-del-cust"){state.customers=state.customers.filter(c=>c.id!==b.dataset.id);closeModal();toast("Customer deleted",b.dataset.id+" removed.");render(state.page);}
+else if(a==="edit-row")toast("Edit mode enabled","Record available for admin editing.");
+else if(a==="save-loan-bal"){const l=state.loans.find(x=>x.id===b.dataset.id);const v=Number(document.getElementById("editLoanBal").value);if(l&&v>=0){l.balance=v;const c=state.customers.find(x=>x.id===l.cid);if(c)c.balance=v;toast("Balance saved",l.id+" → "+money(v));closeModal();if(state.page==="loan-manager")renderLoanGrid("loan",false);}else toast("Invalid value","Enter 0 or more.","navy");}
+else if(a==="save-collector"){const r=state.routes.find(x=>x.id===b.dataset.id);if(r){r.collector=document.getElementById("routeCollector").value||r.collector;toast("Collector saved",r.name+" → "+r.collector);closeModal();if(state.page==="route-manager")render("route-manager");}}
+else if(a==="route-collect"){state.dailyRoute=b.dataset.r;state.dailyMode="today";render("daily");}
+else if(a==="add-route"){openModal("Add Route","New collection route",`<div class="form-grid"><div class="field"><label>Route Name</label><input id="nrName" placeholder="e.g., Homagama"></div><div class="field"><label>Collector</label><input id="nrCol" placeholder="Collector name"></div></div>`,`<button class="btn btn-secondary" data-action="close-modal">CANCEL</button><button class="btn btn-primary" data-action="save-route">SAVE ROUTE</button>`);}
+else if(a==="save-route"){const n=document.getElementById("nrName").value||"New Route",c=document.getElementById("nrCol").value||"Unassigned";state.routes.push({id:"RT-0"+(state.routes.length+1),name:n,collector:c,customers:0,expected:6000,progress:0});closeModal();toast("Route added",n+" created.");render("route-manager");}
+else if(a==="add-expenditure"){openModal("Add Expenditure","Popup form",`<div class="form-grid"><div class="field"><label>Description</label><input id="exDesc" placeholder="e.g., Fuel"></div><div class="field"><label>Amount Rs</label><input id="exAmt" type="number" value="1500"></div><div class="field"><label>Category</label><select id="exCat"><option>Travel</option><option>Office</option><option>Utilities</option></select></div><div class="field"><label>Date</label><input type="date" value="${TODAY}"></div></div>`,`<button class="btn btn-secondary" data-action="close-modal">CANCEL</button><button class="btn btn-primary" data-action="save-ex">SAVE</button>`);}
+else if(a==="save-ex"){const d=document.getElementById("exDesc").value||"Expenditure",v=Number(document.getElementById("exAmt").value||0),c=document.getElementById("exCat").value;state.finance.unshift({date:"Today",ref:"EX-0"+(100+state.finance.length),desc:d,cat:c,income:0,expense:v});closeModal();toast("Expenditure saved",d+" · "+money0(v));renderFinGrid();}
+else if(a==="find-receipt"){const v=document.getElementById("receiptSearch").value;document.getElementById("rcNo").textContent=v||"R-90881";toast("Receipt found",v+" loaded as card.");}
+else if(a==="save-settings"||a==="save-printer")toast("Settings saved","Configuration stored.");
+else if(a==="clear-mac"){document.getElementById("macAddress").value="";toast("Address cleared","Enter MAC before connecting.","navy");}
+else if(a==="edit-mac")toast("Edit mode enabled","MAC field editable.");
+else if(a==="toggle-bluetooth"){const mac=document.getElementById("macAddress")?.value||state.printer.mac;state.printer.mac=mac||state.printer.mac;state.printer.connected=!state.printer.connected;addLog("info",state.printer.connected?`Bluetooth connected: ${state.printer.mac}.`:`Bluetooth disconnected.`);toast(state.printer.connected?"Printer connected":"Printer disconnected",state.printer.connected?"58mm printing available.":"Core functions remain available.",state.printer.connected?"blue":"navy");render("printer-settings");}
+else if(a==="clear-log"){state.logs=[];document.getElementById("logList").innerHTML=`<div class="empty-note">No logged events.</div>`;toast("Log cleared","Event history cleared.");}
+else if(a==="view-full-log"){openModal("Full Application Log",state.logs.length+" events",`${state.logs.slice().reverse().map(l=>`<div class="log-entry ${l.type}">[${l.time}] ${esc(l.text)}</div>`).join("")||'<div class="empty-note">Empty.</div>'}`,`<button class="btn btn-primary" data-action="close-modal">CLOSE</button>`);}
+else if(a==="restart"){addLog("info","Application restart simulated.");toast("Application restarted","Services reinitialized.");}
+else if(a==="set-tab"){state.settingsTab=b.dataset.t;render("general-settings");}
+else if(a==="pay-tab"){state.payTab=b.dataset.t;render("add-payment");}
+else if(a==="cust-next"){state.addCustStep=Math.min(3,state.addCustStep+1);render("add-customer");}
+else if(a==="cust-back"){state.addCustStep=Math.max(1,state.addCustStep-1);render("add-customer");}
+else if(a==="loan-next"){state.addLoanStep=2;render("add-loan");}
+else if(a==="loan-back"){state.addLoanStep=1;render("add-loan");}
+});
+document.addEventListener("input",e=>{
+if(e.target.id==="homeSearch"){state.homeSearch=e.target.value;state.homePage=1;renderHomeGrid();}
+if(e.target.id==="custSearch"){state.custSearch=e.target.value;state.custPage=1;renderCustGrid();}
+if(e.target.id==="loanSearch"){state.loanSearch=e.target.value;state.loanPage=1;renderLoanGrid("loan",false);}
+if(e.target.id==="paySearch"){state.paySearch=e.target.value;state.payPage=1;const g=document.getElementById("payMgrGrid"),pg=document.getElementById("payMgrPager");const f=state.loans.filter(l=>(l.id+" "+l.customer).toLowerCase().includes(state.paySearch.toLowerCase()));const sz=pageSize(),total=Math.max(1,Math.ceil(f.length/sz));g.innerHTML=f.slice(0,sz).map(l=>loanCard(l,true)).join("");pg.innerHTML=pagerHTML(1,total,"payMgr");lucide.createIcons();}
+});
+document.addEventListener("change",e=>{
+if(e.target.id==="homeRoute"){state.homeRoute=e.target.value;state.homePage=1;renderHomeGrid();}
+if(e.target.name==="dmode"){state.dailyMode=e.target.value;document.querySelectorAll(".radio").forEach(r=>r.classList.remove("checked"));e.target.closest(".radio").classList.add("checked");document.getElementById("dailyDateWrap").style.display=state.dailyMode==="custom"?"":"none";updateDailyTiles();toast(state.dailyMode==="today"?"Today Collection":"Custom Date",state.dailyMode==="today"?"Showing today's route totals.":"Pick a date to load totals.");}
+if(e.target.id==="dailyRoute"){state.dailyRoute=e.target.value;updateDailyTiles();}
+if(e.target.id==="dailyDate"){state.dailyDate=e.target.value||TODAY;updateDailyTiles();}
+});
+document.addEventListener("submit",e=>{
+if(e.target.id==="loginForm"){e.preventDefault();document.getElementById("loginScreen").style.display="none";render("home");toast("Welcome back","Administrator access restored.");return;}
+const f=e.target.dataset.form;if(!f)return;e.preventDefault();
+if(f==="payment"){const amt=Number(e.target.querySelector('input[type="number"]').value);const loan=document.getElementById("paymentLoan").value;const cust=document.getElementById("paymentName").textContent;state.payments.unshift({receipt:"R-"+Math.floor(91000+Math.random()*800),customerId:document.getElementById("paymentCustomerId").value.toUpperCase(),loan,loanAmount:75000,customer:cust,amount:amt,time:new Date().toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"}),date:TODAY,route:"Colombo 01",method:"Cash"});toast("Payment saved",money(amt)+" recorded. SMS independent.");openModal("Payment Saved",money(amt)+" · "+cust,`<div class="notice-box navy">Receipt generated. Print via Bluetooth or send SMS from popups.</div><div class="receipt-58" style="margin-top:10px">ALFACloud<br>${money(amt)} · ${cust}<br>${TODAY}<br>Thank you!</div>`,`<button class="btn btn-secondary" data-action="close-modal">CLOSE</button><button class="btn btn-dark" data-nav="print-receipt">PRINT RECEIPT</button>`);}
+else if(f==="loan"){toast("Loan created","Schedule saved.");openModal("Loan Created","Success",`<div class="notice-box navy">Installment <strong>${document.getElementById("loanInstallment")?.textContent||""}</strong> · End <strong>${document.getElementById("loanEndValue")?.textContent||""}</strong></div>`,`<button class="btn btn-secondary" data-action="close-modal">CLOSE</button><button class="btn btn-primary" data-nav="loan-manager">VIEW LOANS</button>`);}
+else if(f==="customer"){const d=new FormData(e.target);state.customers.push({id:"C-"+(1000+state.customers.length+1),name:d.get("name")||"New Customer",phone:d.get("phone")||"07X XXX XXXX",route:d.get("route")||"Colombo 01",balance:0,status:"Active"});state.addCustStep=1;toast("Customer added","Available for loans.");render("customer-manager");}
+});
+document.getElementById("modalOverlay").addEventListener("click",e=>{if(e.target.id==="modalOverlay")closeModal();});
+document.getElementById("menuToggle").addEventListener("click",()=>document.body.classList.toggle("sidebar-open"));
+document.getElementById("overlay").addEventListener("click",()=>document.body.classList.remove("sidebar-open"));
+window.addEventListener("resize",()=>{applyPayTab();if(state.page==="home")renderHomeGrid();});
+render("home");
+</script>
+</body>
+</html>
